@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kalkulator zatrudnienia 2026–2030</title>
+<title>Kalkulator zatrudnienia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -233,7 +233,7 @@ details[open] .fin-sect-hd::after{content:'▴'}
 <div class="page">
 
 <div class="page-header">
-  <h1>Kalkulator zatrudnienia 2026–2030</h1>
+  <h1 id="page-title">Kalkulator zatrudnienia</h1>
   <p>Porównanie form zatrudnienia: UoP · Zlecenie · B2B · Dzieło</p>
 </div>
 
@@ -370,38 +370,7 @@ details[open] .fin-sect-hd::after{content:'▴'}
               <th style="padding:5px 8px;color:var(--text3);font-weight:600;text-align:right">Auto-stawka</th>
             </tr>
           </thead>
-          <tbody id="zmienne_tbody">
-            <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2026</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2026" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2026" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2026">—</td>
-            </tr>
-            <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2027</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2027" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2027" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2027">—</td>
-            </tr>
-            <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2028</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2028" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2028" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2028">—</td>
-            </tr>
-            <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2029</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2029" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2029" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2029">—</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2030</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2030" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2030" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
-              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2030">—</td>
-            </tr>
-          </tbody>
+          <tbody id="zmienne_tbody"></tbody>
         </table>
       </div>
     </div>
@@ -455,15 +424,15 @@ details[open] .fin-sect-hd::after{content:'▴'}
   <details>
     <summary class="fin-sect-hd">Zobowiązania czasowe (kredyty, raty)</summary>
     <div class="fin-sect-body">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">Rata miesięczna obowiązująca w wybranym przedziale. „Od początku 2026" = aktywne od mies. 1.</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5" id="oblig-hint">Rata miesięczna obowiązująca w wybranym przedziale.</div>
       <div id="oblig-list"></div>
       <button class="sim-add-btn" id="oblig-add-btn" style="margin-top:0">+ Dodaj zobowiązanie</button>
     </div>
   </details>
 
-  <!-- Historia zarobków 2025 -->
+  <!-- Historia zarobków poprzedniego roku -->
   <details>
-    <summary class="fin-sect-hd">Historia zarobków 2025</summary>
+    <summary class="fin-sect-hd" id="hist-summary-title">Historia zarobków</summary>
     <div class="fin-sect-body">
       <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">Dane historyczne — wpisz 0 dla miesięcy bez aktywności. Premia wlicza się do sumy miesiąca.</div>
       <div style="overflow-x:auto">
@@ -538,7 +507,7 @@ details[open] .fin-sect-hd::after{content:'▴'}
 
 <!-- Timeline -->
 <div class="panel">
-  <div class="panel-title">Twoja ścieżka statusów — styczeń 2026 → grudzień 2030</div>
+  <div class="panel-title" id="tl-title">Twoja ścieżka statusów</div>
   <div id="tl_main" class="timeline" style="margin-bottom:.75rem"></div>
   <div class="legend" id="tl_leg"></div>
   <div class="info-grid" id="info_grid"></div>
@@ -653,7 +622,9 @@ function zdrowRyczalt(f){
   return 1495.04;
 }
 function parseMon(s){const[y,m]=s.split('-').map(Number);return{y,m};}
-function idxToYM(i){return{y:2026+Math.floor(i/12),m:(i%12)+1};}
+const START_YEAR=new Date().getFullYear();
+const HIST_YEAR=START_YEAR-1;
+function idxToYM(i){return{y:START_YEAR+Math.floor(i/12),m:(i%12)+1};}
 function stageName(s){return{start:'Ulga na start',pref:'Pref. ZUS',mzp:'Mały ZUS+',full:'Pełny ZUS'}[s];}
 
 function getStatus(mIdx,bdayStr,seStr){
@@ -1142,8 +1113,47 @@ document.getElementById('ryczalt_rate').addEventListener('change',()=>{
     render();
 });
 
+// ─── INICJALIZACJA TYTUŁÓW I TABEL OPARTYCH O ROK ─────────────────────────
+(function initDynamicTitles(){
+  const end=START_YEAR+4;
+  document.title=`Kalkulator zatrudnienia ${START_YEAR}–${end}`;
+  document.getElementById('page-title').textContent=`Kalkulator zatrudnienia ${START_YEAR}–${end}`;
+  document.getElementById('tl-title').textContent=`Twoja ścieżka statusów — styczeń ${START_YEAR} → grudzień ${end}`;
+  document.getElementById('hist-summary-title').textContent=`Historia zarobków ${HIST_YEAR}`;
+  if(document.getElementById('oblig-hint'))
+    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale. „Od ${START_YEAR}" = aktywne od mies. 1.`;
+})();
+
+function buildZmienneTable(){
+  const tb=document.getElementById('zmienne_tbody');
+  tb.innerHTML='';
+  for(let yi=0;yi<5;yi++){
+    const yr=START_YEAR+yi;
+    const isLast=yi===4;
+    const tr=document.createElement('tr');
+    if(!isLast) tr.style.borderBottom='1px solid var(--border)';
+    tr.innerHTML=`
+      <td style="padding:6px 8px;color:var(--text2);font-weight:600">${yr}</td>
+      <td style="padding:6px 8px;text-align:center">
+        <input type="number" id="vy_${yr}" min="0" max="200000" step="100" value="0"
+          style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł
+      </td>
+      <td style="padding:6px 8px;text-align:center">
+        <input type="number" id="vb_${yr}" min="0" max="1000000" step="100" value="0"
+          style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł
+      </td>
+      <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_${yr}">—</td>`;
+    tb.appendChild(tr);
+    // Event listenery
+    ['vy_','vb_'].forEach(pfx=>{
+      tr.querySelector(`#${pfx}${yr}`).addEventListener('input',render);
+    });
+  }
+}
+buildZmienneTable();
+
 // ─── FINANSE OSOBISTE ────────────────────────────────────────────────────────
-let obligations = []; // { name, startMonth (-1=od 2026), endMonth, amount }
+let obligations = []; // { name, startMonth (-1=od startu), endMonth, amount }
 
 const HIST_MONTHS=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
 
@@ -1152,7 +1162,7 @@ function buildHistTable(){
   tb.innerHTML='';
   HIST_MONTHS.forEach((mn,mi)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${mn} 2025</td>
+    tr.innerHTML=`<td>${mn} ${HIST_YEAR}</td>
       <td><input type="number" id="hist_g_${mi}" class="fin-input" style="width:80px" min="0" max="200000" step="100" value="0"></td>
       <td><input type="number" id="hist_b_${mi}" class="fin-input" style="width:80px" min="0" max="200000" step="100" value="0"></td>
       <td id="hist_tot_${mi}" style="text-align:right;color:var(--text3);font-size:11px">0 zł</td>`;
@@ -1199,7 +1209,7 @@ function buildObligRow(ob,idx){
 
   const startSel=document.createElement('select');
   startSel.className='oblig-input';
-  startSel.appendChild(new Option('Od 2026',-1));
+  startSel.appendChild(new Option(`Od ${START_YEAR}`,-1));
   OBLIG_LABELS.forEach((l,i)=>startSel.appendChild(new Option(l,i)));
   startSel.value=ob.startMonth;
   startSel.addEventListener('change',()=>{ obligations[idx].startMonth=+startSel.value; render(); });
@@ -1309,7 +1319,7 @@ function render(){
   document.getElementById('kosztyv').textContent=koszty+' zł';
 
   // Wczytaj zmienne zarobki roczne
-  const _YEARS=[2026,2027,2028,2029,2030];
+  const _YEARS=Array.from({length:5},(_,i)=>START_YEAR+i);
   let _hasCustom=false;
   customYearsData=_YEARS.map((yr,yi)=>{
     const monthly=+(document.getElementById(`vy_${yr}`)?.value||0);
@@ -1351,7 +1361,7 @@ function render(){
 
   const cum=arr=>{let s=0;return arr.map(v=>{s+=v;return Math.round(s);});};
   const cumUoP=cum(uopArr),cumZlec=cum(zlecArr),cumB2B=cum(b2bArr),cumDzielo=cum(dzieloArr);
-  const years=['2026','2027','2028','2029','2030'];
+  const years=Array.from({length:5},(_,i)=>String(START_YEAR+i));
 
   const yearlyData=years.map((yr,yi)=>{
     const b=getMonthlyGross(yi*12,b0,raise); // stawka bazowa roku (styczeń, bez premii)
@@ -1362,7 +1372,7 @@ function render(){
     return{year:yr,brutto_miesiac:Math.round(b),status_start:STATUS_NAMES[statusArr[yi*12]],zus_etap:stageName(stageArr[yi*12]),uop_netto_rok:uopR,zlecenie_netto_rok:zlecR,b2b_netto_rok:b2bR,dzielo_netto_rok:dzieloR,b2b_vs_uop:b2bR-uopR,b2b_skumulowane:cumB2B[(yi+1)*12-1]};
   });
 
-  const _zarobkiRoczne=customYearsData?customYearsData.map((cy,yi)=>({rok:2026+yi,stawka_miesieczna:cy.monthly,premia_roczna:cy.bonus})):null;
+  const _zarobkiRoczne=customYearsData?customYearsData.map((cy,yi)=>({rok:START_YEAR+yi,stawka_miesieczna:cy.monthly,premia_roczna:cy.bonus})):null;
   const params={data_urodzenia:bdayStr,student_do:seStr,stawka_bazowa:b0,forma_opodatkowania_b2b:tax,wzrost_roczny_proc:+document.getElementById('raise').value,zbieg_tytułow:zbieg==='yes',wakacje_skladkowe:wakacje,koszt_ksiegowosci:ksieg,koszty_operacyjne_b2b:koszty,ryczalt_stawka:ryczaltRate,status_teraz:STATUS_NAMES[statusArr[0]],zarobki_roczne:_zarobkiRoczne};
   const totals={uop_5lat:uopArr.reduce((a,v)=>a+v,0),zlecenie_5lat:zlecArr.reduce((a,v)=>a+v,0),b2b_5lat:b2bArr.reduce((a,v)=>a+v,0),dzielo_5lat:dzieloArr.reduce((a,v)=>a+v,0)};
   totals.b2b_vs_uop_5lat=totals.b2b_5lat-totals.uop_5lat;
@@ -1385,7 +1395,7 @@ function render(){
   if(t26idx>=0&&t26idx<60)
     alerts.push({t:'a',m:`26. urodziny: mies. ${t26idx+1} (${labels[t26idx]}). Od tego miesiąca: koniec PIT-0, pełny ZUS na zleceniu.`});
   else if(statusArr[0]!=='over26')
-    alerts.push({t:'a',m:`26. urodziny wypadają po grudniu 2030 — przez całe 5 lat jesteś poniżej 26 lat.`});
+    alerts.push({t:'a',m:`26. urodziny wypadają po grudniu ${START_YEAR+4} — przez całe 5 lat jesteś poniżej 26 lat.`});
   if((statusArr[0]==='student'||statusArr[0]==='sub26')&&b0>PIT0_LIMIT)
     alerts.push({t:'r',m:`Stawka >7 127 zł/mies. — limit PIT-0 (85 528 zł/rok) przekraczany już w pierwszym roku.`});
   if(b0>PROG2)
@@ -1412,7 +1422,7 @@ function render(){
   const lset=[...new Set(statusArr)];
   document.getElementById('tl_leg').innerHTML=lset.map(s=>`<span><span class="lsq" style="background:${STATUSCOLS[s]}"></span>${STATUS_NAMES[s]}</span>`).join('');
 
-  const t26label=t26idx>=0&&t26idx<60?`mies. ${t26idx+1} (${labels[t26idx]})`:statusArr[0]!=='over26'?'po 2030':'już minęło';
+  const t26label=t26idx>=0&&t26idx<60?`mies. ${t26idx+1} (${labels[t26idx]})`:statusArr[0]!=='over26'?`po ${START_YEAR+4}`:'już minęło';
   const seLabel=`${seStr}`;
   document.getElementById('info_grid').innerHTML=`
     <div class="info-card"><div class="il">Status teraz</div><div class="iv">${STATUS_NAMES[statusArr[0]]}</div></div>
@@ -1638,7 +1648,7 @@ document.getElementById('btn_show').addEventListener('click',()=>{
 document.getElementById('btn_prompt').addEventListener('click',()=>{
   if(!lastExportData)return;
   const d=lastExportData,s=d.parametry,t=d.podsumowanie_5lat,yr=d.dane_roczne;
-  const msg=`Przesyłam wyniki kalkulatora zatrudnienia 2026–2030 do analizy:\n\nPARAMETRY:\n- Data urodzenia: ${s.data_urodzenia}\n- Status studenta do: ${s.student_do}\n- Stawka bazowa: ${s.stawka_bazowa} zł/mies., wzrost ${s.wzrost_roczny_proc}%/rok\n- Forma opodatkowania B2B: ${s.forma_opodatkowania_b2b}\n- Zbieg tytułów: ${s.zbieg_tytułow?'tak':'nie'}\n- Wakacje składkowe: ${s.wakacje_skladkowe?'tak':'nie'}\n- Koszt księgowości B2B: ${s.koszt_ksiegowosci} zł/mies.\n- Składki MZP+: ${s.mzp_skladki} zł/mies.\n- Status teraz: ${s.status_teraz}\n\nPODSUMOWANIE 5 LAT:\n- UoP łącznie: ${t.uop_5lat.toLocaleString('pl-PL')} zł\n- Zlecenie łącznie: ${t.zlecenie_5lat.toLocaleString('pl-PL')} zł\n- B2B łącznie: ${t.b2b_5lat.toLocaleString('pl-PL')} zł\n- Dzieło łącznie: ${t.dzielo_5lat.toLocaleString('pl-PL')} zł\n- B2B vs UoP: ${t.b2b_vs_uop_5lat>=0?'+':''}${t.b2b_vs_uop_5lat.toLocaleString('pl-PL')} zł\n\nDANE ROCZNE:\n${yr.map(r=>`${r.year}: ${r.brutto_miesiac.toLocaleString('pl-PL')} zł brutto | UoP ${r.uop_netto_rok.toLocaleString('pl-PL')} zł | Zlecenie ${r.zlecenie_netto_rok.toLocaleString('pl-PL')} zł | B2B ${r.b2b_netto_rok.toLocaleString('pl-PL')} zł | Dzieło ${r.dzielo_netto_rok.toLocaleString('pl-PL')} zł (${r.b2b_vs_uop>=0?'+':''}${r.b2b_vs_uop.toLocaleString('pl-PL')} B2B vs UoP) | ${r.status_start} | ${r.zus_etap}`).join('\n')}\n\nProsze o analizę tych wyników.`;
+  const msg=`Przesyłam wyniki kalkulatora zatrudnienia ${START_YEAR}–${START_YEAR+4} do analizy:\n\nPARAMETRY:\n- Data urodzenia: ${s.data_urodzenia}\n- Status studenta do: ${s.student_do}\n- Stawka bazowa: ${s.stawka_bazowa} zł/mies., wzrost ${s.wzrost_roczny_proc}%/rok\n- Forma opodatkowania B2B: ${s.forma_opodatkowania_b2b}\n- Zbieg tytułów: ${s.zbieg_tytułow?'tak':'nie'}\n- Wakacje składkowe: ${s.wakacje_skladkowe?'tak':'nie'}\n- Koszt księgowości B2B: ${s.koszt_ksiegowosci} zł/mies.\n- Składki MZP+: ${s.mzp_skladki} zł/mies.\n- Status teraz: ${s.status_teraz}\n\nPODSUMOWANIE 5 LAT:\n- UoP łącznie: ${t.uop_5lat.toLocaleString('pl-PL')} zł\n- Zlecenie łącznie: ${t.zlecenie_5lat.toLocaleString('pl-PL')} zł\n- B2B łącznie: ${t.b2b_5lat.toLocaleString('pl-PL')} zł\n- Dzieło łącznie: ${t.dzielo_5lat.toLocaleString('pl-PL')} zł\n- B2B vs UoP: ${t.b2b_vs_uop_5lat>=0?'+':''}${t.b2b_vs_uop_5lat.toLocaleString('pl-PL')} zł\n\nDANE ROCZNE:\n${yr.map(r=>`${r.year}: ${r.brutto_miesiac.toLocaleString('pl-PL')} zł brutto | UoP ${r.uop_netto_rok.toLocaleString('pl-PL')} zł | Zlecenie ${r.zlecenie_netto_rok.toLocaleString('pl-PL')} zł | B2B ${r.b2b_netto_rok.toLocaleString('pl-PL')} zł | Dzieło ${r.dzielo_netto_rok.toLocaleString('pl-PL')} zł (${r.b2b_vs_uop>=0?'+':''}${r.b2b_vs_uop.toLocaleString('pl-PL')} B2B vs UoP) | ${r.status_start} | ${r.zus_etap}`).join('\n')}\n\nProsze o analizę tych wyników.`;
   sendPrompt(msg);
 });
 
@@ -1711,7 +1721,7 @@ function saveConfig(){
     obligations:obligations,
     hist2025:(()=>{const a=[];for(let i=0;i<12;i++)a.push({g:document.getElementById(`hist_g_${i}`).value,b:document.getElementById(`hist_b_${i}`).value});return a;})()
   };
-  [2026,2027,2028,2029,2030].forEach(yr=>{
+  Array.from({length:5},(_,i)=>START_YEAR+i).forEach(yr=>{
     cfg[`vy_${yr}`]=document.getElementById(`vy_${yr}`)?.value||'0';
     cfg[`vb_${yr}`]=document.getElementById(`vb_${yr}`)?.value||'0';
   });
@@ -1733,7 +1743,7 @@ function loadConfig(){
         document.getElementById(id).value = cfg[id];
       }
     });
-    [2026,2027,2028,2029,2030].forEach(yr=>{
+    Array.from({length:5},(_,i)=>START_YEAR+i).forEach(yr=>{
       ['vy_','vb_'].forEach(pfx=>{
         const id=pfx+yr;
         if(cfg[id]!==undefined&&document.getElementById(id))document.getElementById(id).value=cfg[id];
@@ -1771,8 +1781,8 @@ document.getElementById('btn_reset').addEventListener('click',()=>{
   localStorage.removeItem('kalk_cfg');
   location.reload();
 });
-buildMonthPick('bday_m','bday_y','2002-03',1980,2010);
-buildMonthPick('se_m','se_y','2026-09',2024,2035);
+buildMonthPick('bday_m','bday_y','2002-03',START_YEAR-46,START_YEAR-16);
+buildMonthPick('se_m','se_y',`${START_YEAR}-09`,START_YEAR-2,START_YEAR+10);
 
 ['gross','raise','tax','zbieg','ksieg','wakacje'].forEach(id=>{
   const el=document.getElementById(id);
@@ -1787,13 +1797,7 @@ document.getElementById('adv_ipbox').addEventListener('change',render);
 document.getElementById('diff_a').addEventListener('change',render);
 document.getElementById('diff_b').addEventListener('change',render);
 
-// Zmienne zarobki — event listenery
-[2026,2027,2028,2029,2030].forEach(yr=>{
-  ['vy_','vb_'].forEach(pfx=>{
-    const el=document.getElementById(pfx+yr);
-    if(el)el.addEventListener('input',render);
-  });
-});
+// Zmienne zarobki — event listenery (budowane dynamicznie przez buildZmienneTable)
 
 loadConfig();
 render();
