@@ -2826,7 +2826,8 @@
                     form = fixedB2bKey;
                     netto = all[form];
                   }
-                  currentTotal += netto;
+                  const roundedNetto = Math.round(netto);
+                  currentTotal += roundedNetto;
                   currentPath.push({
                     i: d.i,
                     y: d.y,
@@ -2836,7 +2837,7 @@
                     b: d.baseGross,
                     zlecGross: d.zlecGross,
                     form,
-                    netto,
+                    netto: roundedNetto,
                     all,
                   });
                 });
