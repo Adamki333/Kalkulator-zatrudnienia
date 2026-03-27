@@ -725,6 +725,7 @@ function zdrowRyczalt(f){
 function parseMon(s){const[y,m]=s.split('-').map(Number);return{y,m};}
 const START_YEAR=new Date().getFullYear();
 const HIST_YEAR=START_YEAR-1;
+const OBLIG_MIN_YEAR=2026;
 function idxToYM(i){return{y:START_YEAR+Math.floor(i/12),m:(i%12)+1};}
 function stageName(s){return{start:'Ulga na start',pref:'Pref. ZUS',mzp:'Mały ZUS+',full:'Pełny ZUS'}[s];}
 
@@ -1222,7 +1223,7 @@ document.getElementById('ryczalt_rate').addEventListener('change',()=>{
   document.getElementById('tl-title').textContent=`Twoja ścieżka statusów — styczeń ${START_YEAR} → grudzień ${end}`;
   document.getElementById('hist-summary-title').textContent=`Historia zarobków ${HIST_YEAR}`;
   if(document.getElementById('oblig-hint'))
-    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale. „Od ${START_YEAR}" = aktywne od mies. 1.`;
+    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale. „Od ${OBLIG_MIN_YEAR}" = aktywne od mies. 1. Najwcześniejsza dostępna data: styczeń ${OBLIG_MIN_YEAR}.`;
 })();
 
 function buildZmienneTable(){
@@ -1310,8 +1311,8 @@ function buildObligRow(ob,idx){
 
   const startSel=document.createElement('select');
   startSel.className='oblig-input';
-  startSel.appendChild(new Option(`Od ${START_YEAR}`,-1));
-  OBLIG_LABELS.forEach((l,i)=>startSel.appendChild(new Option(l,i)));
+  startSel.appendChild(new Option(`Od ${OBLIG_MIN_YEAR}`,-1));
+  OBLIG_LABELS.forEach((l,i)=>{const{y}=idxToYM(i);if(y>=OBLIG_MIN_YEAR)startSel.appendChild(new Option(l,i));});
   startSel.value=ob.startMonth;
   startSel.addEventListener('change',()=>{ obligations[idx].startMonth=+startSel.value; render(); });
 
@@ -1319,7 +1320,7 @@ function buildObligRow(ob,idx){
 
   const endSel=document.createElement('select');
   endSel.className='oblig-input';
-  OBLIG_LABELS.forEach((l,i)=>endSel.appendChild(new Option(l,i)));
+  OBLIG_LABELS.forEach((l,i)=>{const{y}=idxToYM(i);if(y>=OBLIG_MIN_YEAR)endSel.appendChild(new Option(l,i));});
   endSel.value=ob.endMonth;
   endSel.addEventListener('change',()=>{ obligations[idx].endMonth=+endSel.value; render(); });
 
@@ -1862,7 +1863,16 @@ function loadConfig(){
       refreshSimUI();
     }
     if(cfg.obligations && Array.isArray(cfg.obligations)) {
-      obligations = [...cfg.obligations];
+      obligations = cfg.obligations.filter(ob=>ob&&typeof ob==='object').map(ob=>{
+        const sm=+ob.startMonth;
+        const em=+ob.endMonth;
+        return{
+          name:String(ob.name||''),
+          startMonth:sm===-1?-1:Math.max(0,Math.min(59,isNaN(sm)?0:sm)),
+          endMonth:Math.max(0,Math.min(59,isNaN(em)?59:em)),
+          amount:Math.max(0,Math.min(50000,+ob.amount||0))
+        };
+      });
       refreshObligUI();
     }
     if(cfg.hist2025 && Array.isArray(cfg.hist2025)) {
