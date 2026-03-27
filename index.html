@@ -895,29 +895,31 @@ function calcCustomPath(b0,raise,bdayStr,seStr,zbiegV,wakacjeV,ksieg,koszty,rycz
     const b=getMonthlyGross(i,b0,raise);
     const status=getStatus(i,bdayStr,seStr);
     const sw=[...sorted].reverse().find(s=>i>s.fromMonth);
-    // Przed pierwszym przełącznikiem używamy formy startowej wybranej przez użytkownika
     const curForm=sw?sw.form:(startForm||'zlec');
-    // Reset b2bM when switching away from b2b and back
     if(curForm!=='b2b') b2bM=0;
     let netto;
-    // i > fromMonth: wybrany miesiąc to OSTATNI miesiąc starej formy, nowa forma startuje od następnego
-    if(!sw||curForm==='uop'){netto=calcUoPWithCap(b,status,cumUoP).netto;}
-    else if(curForm==='zlec'){netto=calcZlecWithCap(b,status,cumZlec).netto;}
-    else if(curForm==='b2b'){
+    // cumUoP/cumZlec aktualizujemy tylko gdy jesteśmy na danej formie — cap ZUS nie zużywa się na innych formach
+    if(curForm==='uop'){
+      const uR=calcUoPWithCap(b,status,cumUoP);
+      netto=uR.netto; cumUoP+=uR.baseUsed;
+    } else if(curForm==='zlec'){
+      const zR=calcZlecWithCap(b,status,cumZlec);
+      netto=zR.netto; cumZlec+=zR.baseUsed;
+    } else if(curForm==='b2b'){
       b2bM++;
       let rawTax=sw.tax||'lin';
-      // Mapowanie r12/r85 → 'ryczalt' z odpowiednią stawką
       let t=rawTax, effectiveRate=ryczaltRate;
       if(rawTax==='r12'){t='ryczalt'; effectiveRate=12;}
       else if(rawTax==='r85'){t='ryczalt'; effectiveRate=8.5;}
       else if(rawTax==='r15'){t='ryczalt'; effectiveRate=15;}
       else if(rawTax==='r14'){t='ryczalt'; effectiveRate=14;}
       netto=calcB2B(b,b2bM,t,zbiegV,wakacjeV,ksieg+koszty,effectiveRate).netto;
+    } else if(curForm==='dzielo'){
+      netto=calcDzielo(b);
+    } else {
+      const uR=calcUoPWithCap(b,status,cumUoP);
+      netto=uR.netto; cumUoP+=uR.baseUsed;
     }
-    else if(curForm==='dzielo'){netto=calcDzielo(b);}
-    else{netto=calcUoPWithCap(b,status,cumUoP).netto;}
-    const uR=calcUoPWithCap(b,status,cumUoP),zR=calcZlecWithCap(b,status,cumZlec);
-    cumUoP+=uR.baseUsed;cumZlec+=zR.baseUsed;
     arr.push(Math.round(netto));
   }
   return arr;
