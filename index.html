@@ -437,6 +437,22 @@ td.col-best{color:var(--green);font-weight:700}
 <!-- Tabela -->
 <div class="panel">
   <div class="panel-title">Tabela roczna</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)">
+    <span>Kolumna różnicy:</span>
+    <select id="diff_a" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
+      <option value="b2b" selected>B2B</option>
+      <option value="uop">UoP</option>
+      <option value="zlec">Zlecenie</option>
+      <option value="dzielo">Dzieło</option>
+    </select>
+    <span style="color:var(--text3)">vs</span>
+    <select id="diff_b" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
+      <option value="uop" selected>UoP</option>
+      <option value="zlec">Zlecenie</option>
+      <option value="b2b">B2B</option>
+      <option value="dzielo">Dzieło</option>
+    </select>
+  </div>
   <div class="tw"><table id="ytbl"></table></div>
 </div>
 
@@ -1070,6 +1086,15 @@ function render(){
   const params={data_urodzenia:bdayStr,student_do:seStr,stawka_bazowa:b0,forma_opodatkowania_b2b:tax,wzrost_roczny_proc:+document.getElementById('raise').value,zbieg_tytułow:zbieg==='yes',wakacje_skladkowe:wakacje,koszt_ksiegowosci:ksieg,koszty_operacyjne_b2b:koszty,ryczalt_stawka:ryczaltRate,status_teraz:STATUS_NAMES[statusArr[0]],zarobki_roczne:_zarobkiRoczne};
   const totals={uop_5lat:uopArr.reduce((a,v)=>a+v,0),zlecenie_5lat:zlecArr.reduce((a,v)=>a+v,0),b2b_5lat:b2bArr.reduce((a,v)=>a+v,0),dzielo_5lat:dzieloArr.reduce((a,v)=>a+v,0)};
   totals.b2b_vs_uop_5lat=totals.b2b_5lat-totals.uop_5lat;
+
+  // Konfigurowalna kolumna różnicy (czytana tutaj — używana w info_grid i tabeli)
+  const diffA=document.getElementById('diff_a').value;
+  const diffB=document.getElementById('diff_b').value;
+  const DIFF_LABELS={b2b:'B2B',uop:'UoP',zlec:'Zlecenie',dzielo:'Dzieło'};
+  const DIFF_COLORS={b2b:COLORS.b2b,uop:COLORS.uop,zlec:COLORS.zlec,dzielo:COLORS.dzielo};
+  const t1=totals.uop_5lat,t2=totals.zlecenie_5lat,t3=totals.b2b_5lat,t4=totals.dzielo_5lat;
+  const totMap={b2b:t3,uop:t1,zlec:t2,dzielo:t4};
+  const dT=totMap[diffA]-totMap[diffB];
   lastExportData={parametry:params,podsumowanie_5lat:totals,dane_roczne:yearlyData,dane_miesieczne:monthlyData};
   document.getElementById('export_ta').value=JSON.stringify(lastExportData,null,2);
 
@@ -1115,7 +1140,7 @@ function render(){
     <div class="info-card"><div class="il">Koniec studenta</div><div class="iv">${seLabel}</div></div>
     <div class="info-card"><div class="il">Koniec pref. ZUS</div><div class="iv">mies. 30 (${labels[29]})</div></div>
     <div class="info-card"><div class="il">B2B łącznie 5 lat</div><div class="iv">${PLN(totals.b2b_5lat)}</div></div>
-    <div class="info-card"><div class="il">B2B vs UoP / 5 lat</div><div class="iv"><span class="${totals.b2b_vs_uop_5lat>=0?'pos':'neg'}">${totals.b2b_vs_uop_5lat>=0?'+':''}${PLN(totals.b2b_vs_uop_5lat)}</span></div></div>`;
+    <div class="info-card"><div class="il">${DIFF_LABELS[diffA]} vs ${DIFF_LABELS[diffB]} / 5 lat</div><div class="iv"><span class="${dT>=0?'pos':'neg'}">${dT>=0?'+':''}${PLN(dT)}</span></div></div>`;
 
   // Cards
   const now_s=statusArr[0];
@@ -1197,14 +1222,17 @@ function render(){
   
   const optThCol=`<th style="color:${optColor}">Zalecana ścieżka</th>`;
   const simThCol=hasSim?`<th style="color:${simColor}">Moja ścieżka</th>`:'';
-  
+
+  const getDiffVal=(d,key)=>({b2b:d.b2b_netto_rok,uop:d.uop_netto_rok,zlec:d.zlecenie_netto_rok,dzielo:d.dzielo_netto_rok}[key]);
+  const diffColHeader=`<span style="color:${DIFF_COLORS[diffA]}">${DIFF_LABELS[diffA]}</span> vs <span style="color:${DIFF_COLORS[diffB]}">${DIFF_LABELS[diffB]}</span>`;
+
   let tbl=`<tr><th>Rok</th><th>Brutto</th><th>Status</th><th>ZUS</th>`
     + (formsEnabled.uop?`<th style="color:${COLORS.uop}">UoP</th>`:'')
     + (formsEnabled.zlec?`<th style="color:${COLORS.zlec}">Zlecenie</th>`:'')
     + (formsEnabled.b2b?`<th style="color:${COLORS.b2b}">B2B</th>`:'')
     + (formsEnabled.dzielo?`<th style="color:${COLORS.dzielo}">Dzieło</th>`:'')
-    + `<th>B2B vs UoP</th>${optThCol}${simThCol}</tr>`;
-  
+    + `<th>${diffColHeader}</th>${optThCol}${simThCol}</tr>`;
+
   yearlyData.forEach((d,yi)=>{
     let optVals = [];
     if(formsEnabled.uop) optVals.push(d.uop_netto_rok);
@@ -1212,7 +1240,7 @@ function render(){
     if(formsEnabled.b2b) optVals.push(d.b2b_netto_rok);
     if(formsEnabled.dzielo) optVals.push(d.dzielo_netto_rok);
     const maxVal=optVals.length>0?Math.max(...optVals):-1;
-    const diff=d.b2b_vs_uop;
+    const diff=getDiffVal(d,diffA)-getDiffVal(d,diffB);
     const hi=(val)=>val===maxVal?' class="col-best"':'';
     const optTd=`<td style="color:${optColor};font-weight:700">${PLN(optYearly[yi])}</td>`;
     const simTd=hasSim?`<td style="color:${simColor};font-weight:700">${PLN(simYearly[yi])}</td>`:'';
@@ -1223,9 +1251,7 @@ function render(){
        + (formsEnabled.dzielo?`<td${hi(d.dzielo_netto_rok)}>${PLN(d.dzielo_netto_rok)}</td>`:'')
        + `<td><span class="${diff>=0?'pos':'neg'}">${diff>=0?'+':''}${PLN(diff)}</span></td>${optTd}${simTd}</tr>`;
   });
-  
-  const t1=uopArr.reduce((a,v)=>a+v,0),t2=zlecArr.reduce((a,v)=>a+v,0),t3=b2bArr.reduce((a,v)=>a+v,0),t4=dzieloArr.reduce((a,v)=>a+v,0);
-  const dT=t3-t1;
+
   let tOptVals=[];
   if(formsEnabled.uop) tOptVals.push(t1);
   if(formsEnabled.zlec) tOptVals.push(t2);
@@ -1326,7 +1352,9 @@ function saveConfig(){
     kd_biuro: document.getElementById('kd_biuro').value,
     kd_uslugi: document.getElementById('kd_uslugi').value,
     kd_transport: document.getElementById('kd_transport').value,
-    kd_inne: document.getElementById('kd_inne').value
+    kd_inne: document.getElementById('kd_inne').value,
+    diff_a: document.getElementById('diff_a').value,
+    diff_b: document.getElementById('diff_b').value
   };
   [2026,2027,2028,2029,2030].forEach(yr=>{
     cfg[`vy_${yr}`]=document.getElementById(`vy_${yr}`)?.value||'0';
@@ -1342,7 +1370,7 @@ function loadConfig(){
     const cfg = JSON.parse(saved);
     
     ['gross','raise','ksieg','koszty','bday_m','bday_y','se_m','se_y','tax','zbieg','ryczalt_rate','wakacje','sim_start_form',
-     'kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne'].forEach(id=>{
+     'kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne','diff_a','diff_b'].forEach(id=>{
       if(cfg[id] !== undefined && document.getElementById(id)) {
         document.getElementById(id).value = cfg[id];
       }
@@ -1385,6 +1413,10 @@ document.getElementById('adv_ipbox').addEventListener('change',render);
 ['cb_uop','cb_zlec','cb_b2b','cb_dzielo'].forEach(id=>{
   document.getElementById(id).addEventListener('change',render);
 });
+// Kolumna różnicy
+document.getElementById('diff_a').addEventListener('change',render);
+document.getElementById('diff_b').addEventListener('change',render);
+
 // Zmienne zarobki — event listenery
 [2026,2027,2028,2029,2030].forEach(yr=>{
   ['vy_','vb_'].forEach(pfx=>{
