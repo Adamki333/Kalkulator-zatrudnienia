@@ -144,21 +144,122 @@ td.col-best{color:var(--green);font-weight:700}
 /* Pos/neg */
 .pos{color:var(--green)}.neg{color:var(--red)}
 
-/* Responsive – tablet */
+/* ─── Responsywność i ekrany dotykowe ─────────────────────────────────── */
+
+/* Usuń highlight tapnięcia — globalnie */
+*{-webkit-tap-highlight-color:transparent}
+
+/* Zapobiegaj double-tap zoom na elementach interaktywnych */
+button,select,input,label,summary,.sim-del,.fin-sect-hd,
+.export-bar button,.sim-add-btn,.card,.form-cb-item{touch-action:manipulation}
+
+/* Tablet */
 @media(max-width:800px){
   .cards{grid-template-columns:repeat(2,1fr)}
 }
-/* Responsive – mobile */
+
+/* ── Ekrany dotykowe (niezależnie od rozmiaru) ── */
+@media(pointer:coarse){
+  /* Suwaki — grubszy track, duży thumb */
+  input[type=range]{height:6px}
+  input[type=range]::-webkit-slider-thumb{width:28px;height:28px;
+    box-shadow:0 0 0 5px rgba(91,127,255,.18)}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px}
+  input[type=range]:active::-webkit-slider-thumb{box-shadow:0 0 0 10px rgba(91,127,255,.22)}
+
+  /* Selekcje — min 44px, 16px font zapobiega zoomowi iOS */
+  select{font-size:16px!important;min-height:44px;padding:9px 12px}
+  .mpick select{font-size:14px!important;min-height:40px;padding:7px 8px}
+  .sim-row select,.diff-sel{font-size:14px!important;min-height:40px}
+  .diff-sel{font-size:14px!important;min-height:40px!important;padding:8px 10px!important}
+
+  /* Inputy liczbowe — 16px zapobiega zoomowi iOS */
+  input[type=number]{font-size:16px!important;min-height:40px;padding:6px 10px}
+  .fin-input{font-size:14px!important;min-height:40px;padding:6px 9px;width:95px}
+  .oblig-input{font-size:14px!important;min-height:40px;padding:6px 9px}
+
+  /* Przyciski — minimum 44px */
+  .export-bar button,.sim-add-btn,#hist_use_avg{min-height:44px;padding:10px 20px;font-size:13px}
+
+  /* Przycisk usuń — duży cel tapnięcia */
+  .sim-del{min-width:44px;min-height:44px;display:flex;align-items:center;
+    justify-content:center;font-size:22px;padding:0}
+
+  /* Details/summary — większy obszar tapnięcia */
+  .fin-sect-hd{padding:13px 0;font-size:13px}
+  details.b2b-details summary{padding:13px 14px}
+
+  /* Checkboxy — większe */
+  .form-cb-item input[type=checkbox]{width:20px;height:20px}
+  .form-cb-item{gap:10px;font-size:13px}
+  .form-cb-list{gap:20px}
+
+  /* Aktywne stany zamiast hover (hover "klei się" na dotyku) */
+  .card:hover{transform:none;box-shadow:none;border-color:var(--border)}
+  .card:active{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border2)}
+  .info-card:hover{transform:none;border-color:var(--border)}
+  .info-card:active{transform:translateY(-1px);border-color:var(--border2)}
+  .export-bar button:hover{background:var(--bg3);color:var(--text2);
+    border-color:var(--border2);transform:none}
+  .export-bar button:active{background:var(--bg2);color:var(--text);
+    border-color:var(--accent);transform:scale(.97)}
+  .panel:hover{box-shadow:none}
+
+  /* Scroll z inercją na tabelach i listach */
+  .tw,[style*="overflow-x:auto"]{-webkit-overflow-scrolling:touch}
+}
+
+/* ── Mobile ≤ 600px ── */
 @media(max-width:600px){
+  .page{padding:1rem .75rem 3rem}
+  .panel{padding:1rem 1rem}
+  .page-header h1{font-size:1.3rem}
+
   label{width:100%;margin-bottom:3px}
   .row{gap:8px}
+
+  /* Karty — 2 kolumny */
   .cards{grid-template-columns:repeat(2,1fr)}
-  .info-grid{grid-template-columns:repeat(2,1fr)}
-  table{font-size:10px}
-  th,td{padding:5px 6px}
-  select{min-width:160px}
-  .page-header h1{font-size:1.3rem}
   .cn{font-size:15px}
+  .info-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* Selekty — pełna szerokość (poza month pickerem) */
+  select{min-width:0;width:100%}
+  .mpick{flex-wrap:nowrap}
+  .mpick select.mpick-m{width:140px;flex:0 0 auto}
+  .mpick select.mpick-y{width:95px;flex:0 0 auto}
+  .sim-row select,.sim-row select.sw-month,
+  .sim-row select.sw-form,.sim-row select.sw-tax{width:100%}
+
+  /* Tabela — kompaktowa */
+  table{font-size:10px}
+  th,td{padding:6px 7px}
+
+  /* Sim-row — stack pionowy */
+  .sim-row{flex-direction:column;align-items:stretch;gap:6px}
+  .sim-row .sw-sep{font-size:10px}
+  .sim-del{align-self:flex-end;margin-left:0}
+
+  /* Oblig-row — stack */
+  .oblig-row{flex-direction:column;align-items:stretch;gap:5px}
+  .oblig-row .oblig-input{width:100%}
+  .oblig-row select{width:100%;min-height:0}
+
+  /* Selekty kolumny różnicy */
+  .diff-sel{width:auto!important;flex:1;font-size:13px!important;padding:6px 8px!important;min-height:36px}
+
+  /* Export bar */
+  .export-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .export-bar button{width:100%;justify-content:center}
+  #btn_reset{grid-column:1/-1;margin-left:0}
+}
+
+/* ── Bardzo małe ekrany ≤ 400px ── */
+@media(max-width:400px){
+  .cards{grid-template-columns:1fr}
+  .panel{padding:.85rem .75rem}
+  .cn{font-size:14px}
+  .info-grid{grid-template-columns:1fr 1fr}
 }
 
 /* Form Checkboxes */
@@ -544,16 +645,16 @@ details[open] .fin-sect-hd::after{content:'▴'}
 <!-- Tabela -->
 <div class="panel">
   <div class="panel-title">Tabela roczna</div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)">
+  <div class="diff-bar" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)">
     <span>Kolumna różnicy:</span>
-    <select id="diff_a" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
+    <select id="diff_a" class="diff-sel" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
       <option value="b2b" selected>B2B</option>
       <option value="uop">UoP</option>
       <option value="zlec">Zlecenie</option>
       <option value="dzielo">Dzieło</option>
     </select>
     <span style="color:var(--text3)">vs</span>
-    <select id="diff_b" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
+    <select id="diff_b" class="diff-sel" style="font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;font-family:inherit">
       <option value="uop" selected>UoP</option>
       <option value="zlec">Zlecenie</option>
       <option value="b2b">B2B</option>
