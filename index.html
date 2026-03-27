@@ -1224,7 +1224,7 @@ document.getElementById('ryczalt_rate').addEventListener('change',()=>{
   document.getElementById('tl-title').textContent=`Twoja ścieżka statusów — styczeń ${START_YEAR} → grudzień ${end}`;
   document.getElementById('hist-summary-title').textContent=`Historia zarobków ${HIST_YEAR}`;
   if(document.getElementById('oblig-hint'))
-    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale (miesiąc i rok). Najwcześniejsza dostępna data: styczeń ${OBLIG_MIN_YEAR}.`;
+    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale. Data startu może sięgać ${START_YEAR-10} roku, koniec do ${OBLIG_MAX_YEAR}.`;
 })();
 
 function buildZmienneTable(){
@@ -1304,10 +1304,10 @@ document.getElementById('hist_use_avg').addEventListener('click',()=>{
 const OBLIG_MAX_IDX=59;
 const OBLIG_MAX_YEAR=idxToYM(OBLIG_MAX_IDX).y;
 
-function obligIdxToYM(idx){const i=idx===-1?0:Math.max(0,Math.min(OBLIG_MAX_IDX,idx));return idxToYM(i);}
-function ymToObligIdx(y,m){return Math.max(0,Math.min(OBLIG_MAX_IDX,(y-START_YEAR)*12+(m-1)));}
+function obligIdxToYM(idx){const y=START_YEAR+Math.floor(idx/12);const m=((idx%12)+12)%12+1;return{y,m};}
+function ymToObligIdx(y,m){return Math.min(OBLIG_MAX_IDX,(y-START_YEAR)*12+(m-1));}
 
-function buildObligMonthYearPick(initIdx,onChange){
+function buildObligMonthYearPick(initIdx,onChange,yFrom,yTo){
   const {y:iy,m:im}=obligIdxToYM(initIdx);
   const wrap=Object.assign(document.createElement('span'),{className:'oblig-mpick',style:'display:inline-flex;gap:3px;align-items:center'});
 
@@ -1318,7 +1318,7 @@ function buildObligMonthYearPick(initIdx,onChange){
 
   const ySel=document.createElement('select');
   ySel.className='oblig-input';
-  for(let y=OBLIG_MIN_YEAR;y<=OBLIG_MAX_YEAR;y++)ySel.appendChild(new Option(y,y));
+  for(let y=yFrom;y<=yTo;y++)ySel.appendChild(new Option(y,y));
   ySel.value=iy;
 
   const update=()=>onChange(ymToObligIdx(+ySel.value,+mSel.value));
@@ -1336,9 +1336,9 @@ function buildObligRow(ob,idx){
   const nameEl=Object.assign(document.createElement('input'),{type:'text',value:ob.name||'',placeholder:'Nazwa (np. kredyt)',className:'oblig-input',style:'flex:1;min-width:100px'});
   nameEl.addEventListener('input',()=>{ obligations[idx].name=nameEl.value; });
 
-  const startPick=buildObligMonthYearPick(ob.startMonth,v=>{obligations[idx].startMonth=v;render();});
+  const startPick=buildObligMonthYearPick(ob.startMonth,v=>{obligations[idx].startMonth=v;render();},START_YEAR-10,OBLIG_MAX_YEAR);
   const arrow=Object.assign(document.createElement('span'),{textContent:'→',style:'font-size:11px;color:var(--text3)'});
-  const endPick=buildObligMonthYearPick(ob.endMonth,v=>{obligations[idx].endMonth=v;render();});
+  const endPick=buildObligMonthYearPick(ob.endMonth,v=>{obligations[idx].endMonth=v;render();},OBLIG_MIN_YEAR,OBLIG_MAX_YEAR);
 
   const amtEl=Object.assign(document.createElement('input'),{type:'number',value:ob.amount||0,min:0,max:50000,step:50,className:'oblig-input',style:'width:75px;text-align:right'});
   amtEl.addEventListener('input',()=>{ obligations[idx].amount=+amtEl.value||0; render(); });
@@ -1884,7 +1884,7 @@ function loadConfig(){
         const em=+ob.endMonth;
         return{
           name:String(ob.name||''),
-          startMonth:sm===-1?-1:Math.max(0,Math.min(59,isNaN(sm)?0:sm)),
+          startMonth:Math.max(-120,Math.min(59,isNaN(sm)||sm===-1?0:sm)),
           endMonth:Math.max(0,Math.min(59,isNaN(em)?59:em)),
           amount:Math.max(0,Math.min(50000,+ob.amount||0))
         };
