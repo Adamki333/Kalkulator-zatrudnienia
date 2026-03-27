@@ -20,7 +20,7 @@
   --accent2:#7f5bff;
   --green:#1dc88a;
   --orange:#f59e0b;
-  --red:#f05f5f;
+  --red:#f05f5f;--green:#1dc88a;
   --radius:10px;
   --radius-lg:14px;
   --shadow:0 4px 24px rgba(0,0,0,.4);
@@ -200,6 +200,31 @@ td.col-best{color:var(--green);font-weight:700}
 .sim-add-btn:hover{border-color:var(--accent);color:var(--accent)}
 .sim-result-row td{color:var(--accent);font-weight:700}
 .sim-result-row td:first-child{color:var(--accent)}
+
+/* Personal finances panel */
+.fin-grid{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center}
+.fin-input{width:85px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 7px;font-size:11px;font-family:inherit}
+.fin-sep{font-size:11px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border);margin-top:8px;text-align:right}
+.fin-sect-hd{cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);padding:6px 0 4px;display:flex;align-items:center;justify-content:space-between;user-select:none}
+.fin-sect-hd::after{content:'▾';font-size:10px;color:var(--text3)}
+details[open] .fin-sect-hd::after{content:'▴'}
+.fin-sect-body{padding:8px 0 4px}
+.oblig-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:6px}
+.oblig-input{background:var(--bg2);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit}
+.hist-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.hist-tbl th,.hist-tbl td{padding:4px 7px}
+.hist-tbl th{color:var(--text3);font-weight:600;text-align:right;border-bottom:1px solid var(--border)}
+.hist-tbl th:first-child{text-align:left}
+.hist-tbl td{color:var(--text2);text-align:right}
+.hist-tbl td:first-child{color:var(--text2);font-weight:500;text-align:left}
+.hist-tbl tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.fin-badge{display:inline-flex;flex-direction:column;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;min-width:120px}
+.fin-badge-label{font-size:10px;color:var(--text3);margin-bottom:2px}
+.fin-badge-val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.wealth-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.wealth-tbl th,.wealth-tbl td{padding:4px 8px;text-align:right}
+.wealth-tbl th{color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+.wealth-tbl th:first-child,.wealth-tbl td:first-child{text-align:left}
 
 </style>
 </head>
@@ -381,6 +406,119 @@ td.col-best{color:var(--green);font-weight:700}
       </div>
     </div>
   </details>
+</div>
+
+<!-- Moje finanse osobiste -->
+<div class="panel">
+  <div class="panel-title">Moje finanse osobiste</div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.6">Wydatki osobiste są odejmowane od netto każdej formy → karty i tabela pokazują <strong>dochód do dyspozycji</strong>.</div>
+
+  <!-- Opłaty stałe -->
+  <details open>
+    <summary class="fin-sect-hd">Opłaty stałe</summary>
+    <div class="fin-sect-body">
+      <div class="fin-grid">
+        <span style="font-size:11px;color:var(--text2)">Czynsz + opłaty admin.</span>
+        <div><input type="number" id="exp_czynsz" class="fin-input" min="0" max="10000" step="50" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Prąd &amp; media</span>
+        <div><input type="number" id="exp_media" class="fin-input" min="0" max="2000" step="10" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Internet &amp; telefon</span>
+        <div><input type="number" id="exp_internet" class="fin-input" min="0" max="500" step="10" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Czesne <span style="font-size:10px;color:var(--text3)">(do daty końca studiów)</span></span>
+        <div><input type="number" id="exp_czesne" class="fin-input" min="0" max="5000" step="50" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Inne stałe</span>
+        <div><input type="number" id="exp_stale_inne" class="fin-input" min="0" max="5000" step="50" value="0"> zł</div>
+      </div>
+      <div class="fin-sep">Suma stałych: <strong id="exp_stale_total" style="color:var(--text1)">0 zł</strong>/mies.</div>
+    </div>
+  </details>
+
+  <!-- Opłaty zmienne -->
+  <details>
+    <summary class="fin-sect-hd">Opłaty zmienne (miesięczne średnie)</summary>
+    <div class="fin-sect-body">
+      <div class="fin-grid">
+        <span style="font-size:11px;color:var(--text2)">Wyżywienie</span>
+        <div><input type="number" id="exp_wyzywienie" class="fin-input" min="0" max="5000" step="50" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Transport</span>
+        <div><input type="number" id="exp_transport_os" class="fin-input" min="0" max="2000" step="50" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Subskrypcje</span>
+        <div><input type="number" id="exp_sub" class="fin-input" min="0" max="1000" step="10" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Rozrywka &amp; inne</span>
+        <div><input type="number" id="exp_zm_inne" class="fin-input" min="0" max="3000" step="50" value="0"> zł</div>
+      </div>
+      <div class="fin-sep">Suma zmiennych: <strong id="exp_zm_total" style="color:var(--text1)">0 zł</strong>/mies.</div>
+    </div>
+  </details>
+
+  <!-- Zobowiązania czasowe -->
+  <details>
+    <summary class="fin-sect-hd">Zobowiązania czasowe (kredyty, raty)</summary>
+    <div class="fin-sect-body">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">Rata miesięczna obowiązująca w wybranym przedziale. „Od początku 2026" = aktywne od mies. 1.</div>
+      <div id="oblig-list"></div>
+      <button class="sim-add-btn" id="oblig-add-btn" style="margin-top:0">+ Dodaj zobowiązanie</button>
+    </div>
+  </details>
+
+  <!-- Historia zarobków 2025 -->
+  <details>
+    <summary class="fin-sect-hd">Historia zarobków 2025</summary>
+    <div class="fin-sect-body">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">Dane historyczne — wpisz 0 dla miesięcy bez aktywności. Premia wlicza się do sumy miesiąca.</div>
+      <div style="overflow-x:auto">
+        <table class="hist-tbl">
+          <thead><tr>
+            <th style="text-align:left">Miesiąc</th>
+            <th>Brutto zł</th>
+            <th>Premia zł</th>
+            <th>Razem</th>
+          </tr></thead>
+          <tbody id="hist-tbody-2025"></tbody>
+          <tfoot><tr style="border-top:1px solid var(--border)">
+            <td style="text-align:left;color:var(--text2);font-weight:600">Suma / śr.</td>
+            <td id="hist_sum_g" style="text-align:right;font-weight:600;color:var(--text2)">—</td>
+            <td id="hist_sum_b" style="text-align:right;font-weight:600;color:var(--text2)">—</td>
+            <td id="hist_avg" style="text-align:right;font-weight:700;color:var(--accent)">—</td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="hist_use_avg" style="font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:inherit">Użyj średniej jako stawki bazowej</button>
+        <span id="hist_avg_info" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+  </details>
+
+  <!-- Aktualny majątek -->
+  <details>
+    <summary class="fin-sect-hd">Aktualny majątek</summary>
+    <div class="fin-sect-body">
+      <div class="fin-grid">
+        <span style="font-size:11px;color:var(--text2)">Oszczędności (gotówka)</span>
+        <div><input type="number" id="asset_savings" class="fin-input" min="0" max="10000000" step="1000" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Inwestycje (akcje, obligacje)</span>
+        <div><input type="number" id="asset_invest" class="fin-input" min="0" max="10000000" step="1000" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Nieruchomości</span>
+        <div><input type="number" id="asset_real" class="fin-input" min="0" max="10000000" step="10000" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Pojazdy</span>
+        <div><input type="number" id="asset_car" class="fin-input" min="0" max="1000000" step="1000" value="0"> zł</div>
+        <span style="font-size:11px;color:var(--text2)">Inne</span>
+        <div><input type="number" id="asset_other" class="fin-input" min="0" max="10000000" step="1000" value="0"> zł</div>
+      </div>
+      <div class="fin-sep">Łączny majątek: <strong id="asset_total" style="color:var(--text1)">0 zł</strong></div>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Prognoza majątku po 5 latach (majątek + oszczędności netto)</div>
+        <div id="wealth-proj"></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Podsumowanie -->
+  <div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Dochód do dyspozycji — teraz</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="fin-disp-cards"></div>
+  </div>
 </div>
 
 <!-- Alerts -->
@@ -1004,6 +1142,148 @@ document.getElementById('ryczalt_rate').addEventListener('change',()=>{
     render();
 });
 
+// ─── FINANSE OSOBISTE ────────────────────────────────────────────────────────
+let obligations = []; // { name, startMonth (-1=od 2026), endMonth, amount }
+
+const HIST_MONTHS=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+
+function buildHistTable(){
+  const tb=document.getElementById('hist-tbody-2025');
+  tb.innerHTML='';
+  HIST_MONTHS.forEach((mn,mi)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${mn} 2025</td>
+      <td><input type="number" id="hist_g_${mi}" class="fin-input" style="width:80px" min="0" max="200000" step="100" value="0"></td>
+      <td><input type="number" id="hist_b_${mi}" class="fin-input" style="width:80px" min="0" max="200000" step="100" value="0"></td>
+      <td id="hist_tot_${mi}" style="text-align:right;color:var(--text3);font-size:11px">0 zł</td>`;
+    tb.appendChild(tr);
+    tr.querySelectorAll('input').forEach(el=>el.addEventListener('input',updateHistSummary));
+  });
+}
+
+function updateHistSummary(){
+  let sumG=0,sumB=0,active=0;
+  for(let i=0;i<12;i++){
+    const g=+document.getElementById(`hist_g_${i}`).value||0;
+    const b=+document.getElementById(`hist_b_${i}`).value||0;
+    document.getElementById(`hist_tot_${i}`).textContent=PLN(g+b);
+    if(g>0||b>0){sumG+=g;sumB+=b;active++;}
+  }
+  document.getElementById('hist_sum_g').textContent=PLN(sumG);
+  document.getElementById('hist_sum_b').textContent=PLN(sumB);
+  const avgAll=Math.round((sumG+sumB)/12);
+  document.getElementById('hist_avg').textContent=PLN(avgAll)+'/mies.';
+  const avgAct=active>0?Math.round((sumG+sumB)/active):0;
+  document.getElementById('hist_avg_info').textContent=active>0?`(z ${active} aktywnych mies.: śr. ${PLN(avgAct)})`: '';
+  document.getElementById('hist_use_avg').dataset.avg=avgAll;
+}
+
+document.getElementById('hist_use_avg').addEventListener('click',()=>{
+  const avg=+document.getElementById('hist_use_avg').dataset.avg||0;
+  if(avg>0){
+    const sl=document.getElementById('gross');
+    sl.value=Math.min(Math.max(avg,+sl.min),+sl.max);
+    document.getElementById('gv').textContent=Math.round(avg).toLocaleString('pl-PL')+' zł';
+    render();
+  }
+});
+
+const OBLIG_LABELS=(()=>{const a=[];for(let i=0;i<60;i++){const{y,m}=idxToYM(i);a.push(`${m<10?'0':''}${m}.${y}`);}return a;})();
+
+function buildObligRow(ob,idx){
+  const div=document.createElement('div');
+  div.className='oblig-row';
+
+  const nameEl=Object.assign(document.createElement('input'),{type:'text',value:ob.name||'',placeholder:'Nazwa (np. kredyt)',className:'oblig-input',style:'flex:1;min-width:100px'});
+  nameEl.addEventListener('input',()=>{ obligations[idx].name=nameEl.value; });
+
+  const startSel=document.createElement('select');
+  startSel.className='oblig-input';
+  startSel.appendChild(new Option('Od 2026',-1));
+  OBLIG_LABELS.forEach((l,i)=>startSel.appendChild(new Option(l,i)));
+  startSel.value=ob.startMonth;
+  startSel.addEventListener('change',()=>{ obligations[idx].startMonth=+startSel.value; render(); });
+
+  const arrow=Object.assign(document.createElement('span'),{textContent:'→',style:'font-size:11px;color:var(--text3)'});
+
+  const endSel=document.createElement('select');
+  endSel.className='oblig-input';
+  OBLIG_LABELS.forEach((l,i)=>endSel.appendChild(new Option(l,i)));
+  endSel.value=ob.endMonth;
+  endSel.addEventListener('change',()=>{ obligations[idx].endMonth=+endSel.value; render(); });
+
+  const amtEl=Object.assign(document.createElement('input'),{type:'number',value:ob.amount||0,min:0,max:50000,step:50,className:'oblig-input',style:'width:75px;text-align:right'});
+  amtEl.addEventListener('input',()=>{ obligations[idx].amount=+amtEl.value||0; render(); });
+  const zlSpan=Object.assign(document.createElement('span'),{textContent:'zł/mies.',style:'font-size:10px;color:var(--text3);white-space:nowrap'});
+
+  const del=document.createElement('button');
+  del.className='sim-del'; del.textContent='×'; del.title='Usuń';
+  del.onclick=()=>{ obligations.splice(idx,1); refreshObligUI(); render(); };
+
+  div.append(nameEl,startSel,arrow,endSel,amtEl,zlSpan,del);
+  return div;
+}
+
+function refreshObligUI(){
+  const list=document.getElementById('oblig-list');
+  list.innerHTML='';
+  obligations.forEach((ob,idx)=>list.appendChild(buildObligRow(ob,idx)));
+  document.getElementById('oblig-add-btn').style.display=obligations.length>=8?'none':'block';
+}
+
+document.getElementById('oblig-add-btn').addEventListener('click',()=>{
+  if(obligations.length>=8)return;
+  obligations.push({name:'',startMonth:-1,endMonth:59,amount:0});
+  refreshObligUI();
+  render();
+});
+
+function getMonthlyPersonalExpenses(monthIdx,seStr){
+  const{y,m}=idxToYM(monthIdx);
+  const se=parseMon(seStr);
+  const isStudent=(y<se.y)||(y===se.y&&m<=se.m);
+  let tot=0;
+  ['exp_czynsz','exp_media','exp_internet','exp_stale_inne',
+   'exp_wyzywienie','exp_transport_os','exp_sub','exp_zm_inne']
+    .forEach(id=>{tot+=(+document.getElementById(id).value||0);});
+  if(isStudent) tot+=(+document.getElementById('exp_czesne').value||0);
+  obligations.forEach(ob=>{
+    const s=ob.startMonth===-1?0:ob.startMonth;
+    if(monthIdx>=s&&monthIdx<=ob.endMonth&&ob.amount>0) tot+=ob.amount;
+  });
+  return tot;
+}
+
+function updateExpenseSums(){
+  const stale=['exp_czynsz','exp_media','exp_internet','exp_czesne','exp_stale_inne']
+    .reduce((s,id)=>s+(+document.getElementById(id).value||0),0);
+  const zm=['exp_wyzywienie','exp_transport_os','exp_sub','exp_zm_inne']
+    .reduce((s,id)=>s+(+document.getElementById(id).value||0),0);
+  document.getElementById('exp_stale_total').textContent=PLN(stale);
+  document.getElementById('exp_zm_total').textContent=PLN(zm);
+}
+
+function getTotalAssets(){
+  return['asset_savings','asset_invest','asset_real','asset_car','asset_other']
+    .reduce((s,id)=>s+(+document.getElementById(id).value||0),0);
+}
+function updateAssetDisplay(){
+  document.getElementById('asset_total').textContent=PLN(getTotalAssets());
+}
+
+// Event listeners — expense inputs
+['exp_czynsz','exp_media','exp_internet','exp_czesne','exp_stale_inne',
+ 'exp_wyzywienie','exp_transport_os','exp_sub','exp_zm_inne'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{ updateExpenseSums(); render(); });
+});
+['asset_savings','asset_invest','asset_real','asset_car','asset_other'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{ updateAssetDisplay(); render(); });
+});
+
+buildHistTable();
+updateHistSummary();
+refreshObligUI();
+
 function render(){
   const formsEnabled = {
     uop: document.getElementById('cb_uop').checked,
@@ -1281,6 +1561,65 @@ function render(){
 
   const tn={lin:'Liniowy 19%: zdrowotna 4,9% dochodu, odliczenie do 14 100 zł/rok.',skala:'Skala 12%/32%: kwota wolna 300 zł/mies., próg 32% powyżej ~10 000 zł/mies.',r12:'Ryczałt 12% (IT): zdrowotna stała (3 progi), odliczenie 50% od przychodu.',r85:'Ryczałt 8,5%: j.w., niższa stawka.',ipbox:'IP Box 5%: kwalifikowane prawa IP, wymaga ewidencji B+R.'};
   document.getElementById('foot').innerHTML=`${tn[tax]} Wzrost stawki ${document.getElementById('raise').value}%/rok. Uwzględniono: limit 30-krotności (282 600 zł/rok), wakacje składkowe${wakacje?' (wł.)':' (wył.)'}, koszt księgowości B2B (${ksieg} zł/mies.). Nie uwzględniono: wartości urlopu (~10%), L4, PPK — łącznie ~15–20% wartości wynagrodzenia. Kwoty w cenach bieżących. Dzieło: brak ZUS, brak PIT-0, KUP 20%, ryzyko przekwalifikowania przez ZUS.<br><br>Uwaga: UoP i zlecenie porównywane przy identycznym koszcie pracodawcy/zleceniodawcy (ta sama kwota brutto). W praktyce zlecenie często bywa podane jako kwota netto lub brutto dla zleceniodawcy — wówczas porównanie zmienia się na korzyść zlecenia.`;
+
+  // ── Finanse osobiste: dochód do dyspozycji ────────────────────────────────
+  updateExpenseSums();
+  updateAssetDisplay();
+  const exp0=getMonthlyPersonalExpenses(0,seStr); // wydatki w mies.1 (z/bez czesnego)
+  const dispCards=[
+    {label:'Umowa o pracę',key:'uop',col:COLORS.uop,net:calcUoPWithCap(b0,statusArr[0],0).netto},
+    {label:'Zlecenie',key:'zlec',col:COLORS.zlec,net:calcZlecWithCap(b0,statusArr[0],0).netto},
+    {label:'B2B (mies.1)',key:'b2b',col:COLORS.b2b,net:calcB2B(b0,1,tax,zbieg,wakacje,ksieg+koszty,ryczaltRate).netto},
+    {label:'Dzieło',key:'dzielo',col:COLORS.dzielo,net:calcDzielo(b0)}
+  ].filter(x=>formsEnabled[x.key]);
+
+  const totalExp5=[0,1,2,3,4].map(yi=>
+    Array.from({length:12},(_,mi)=>getMonthlyPersonalExpenses(yi*12+mi,seStr)).reduce((a,v)=>a+v,0)
+  ).reduce((a,v)=>a+v,0);
+
+  // Kumulatywny dochód do dyspozycji po 5 latach per forma
+  const dispArr5={
+    uop: uopArr.reduce((a,v)=>a+v,0)-totalExp5,
+    zlec: zlecArr.reduce((a,v)=>a+v,0)-totalExp5,
+    b2b: b2bArr.reduce((a,v)=>a+v,0)-totalExp5,
+    dzielo: dzieloArr.reduce((a,v)=>a+v,0)-totalExp5
+  };
+
+  const totalAssetsNow=getTotalAssets();
+
+  // Karty "dochód do dyspozycji teraz"
+  document.getElementById('fin-disp-cards').innerHTML=
+    (exp0>0 ? dispCards : []).map(x=>{
+      const disp=x.net-exp0;
+      return `<div class="fin-badge">
+        <span class="fin-badge-label" style="color:${x.col}">${x.label}</span>
+        <span class="fin-badge-val ${disp>=0?'pos':'neg'}">${disp>=0?'':'-'}${PLN(Math.abs(disp))}</span>
+        <span style="font-size:10px;color:var(--text3);margin-top:2px">po wydatkach ${PLN(exp0)}/mies.</span>
+      </div>`;
+    }).join('')+(exp0===0?'<span style="font-size:11px;color:var(--text3)">Wpisz wydatki powyżej, aby zobaczyć dochód do dyspozycji.</span>':'');
+
+  // Prognoza majątku
+  const wealthRows=[
+    {label:'UoP',key:'uop',col:COLORS.uop,enabled:formsEnabled.uop},
+    {label:'Zlecenie',key:'zlec',col:COLORS.zlec,enabled:formsEnabled.zlec},
+    {label:'B2B',key:'b2b',col:COLORS.b2b,enabled:formsEnabled.b2b},
+    {label:'Dzieło',key:'dzielo',col:COLORS.dzielo,enabled:formsEnabled.dzielo}
+  ].filter(x=>x.enabled);
+  if(totalAssetsNow>0||totalExp5>0){
+    const wHdr=`<table class="wealth-tbl"><tr><th>Forma</th><th>Majątek teraz</th><th>Dyspozycja 5 lat</th><th>Majątek za 5 lat</th></tr>`;
+    const wRows=wealthRows.map(x=>{
+      const d5=dispArr5[x.key];
+      const w5=totalAssetsNow+d5;
+      return `<tr><td style="color:${x.col};font-weight:600">${x.label}</td>
+        <td>${PLN(totalAssetsNow)}</td>
+        <td><span class="${d5>=0?'pos':'neg'}">${d5>=0?'+':''}${PLN(d5)}</span></td>
+        <td style="font-weight:700;color:${w5>=totalAssetsNow?'var(--green)':'var(--red)'}">${PLN(w5)}</td></tr>`;
+    }).join('');
+    document.getElementById('wealth-proj').innerHTML=wHdr+wRows+'</table>';
+  } else {
+    document.getElementById('wealth-proj').innerHTML='<span style="font-size:11px;color:var(--text3)">Wpisz aktualny majątek, aby zobaczyć prognozę.</span>';
+  }
+
   saveConfig();
 }
 
@@ -1354,7 +1693,23 @@ function saveConfig(){
     kd_transport: document.getElementById('kd_transport').value,
     kd_inne: document.getElementById('kd_inne').value,
     diff_a: document.getElementById('diff_a').value,
-    diff_b: document.getElementById('diff_b').value
+    diff_b: document.getElementById('diff_b').value,
+    exp_czynsz:document.getElementById('exp_czynsz').value,
+    exp_media:document.getElementById('exp_media').value,
+    exp_internet:document.getElementById('exp_internet').value,
+    exp_czesne:document.getElementById('exp_czesne').value,
+    exp_stale_inne:document.getElementById('exp_stale_inne').value,
+    exp_wyzywienie:document.getElementById('exp_wyzywienie').value,
+    exp_transport_os:document.getElementById('exp_transport_os').value,
+    exp_sub:document.getElementById('exp_sub').value,
+    exp_zm_inne:document.getElementById('exp_zm_inne').value,
+    asset_savings:document.getElementById('asset_savings').value,
+    asset_invest:document.getElementById('asset_invest').value,
+    asset_real:document.getElementById('asset_real').value,
+    asset_car:document.getElementById('asset_car').value,
+    asset_other:document.getElementById('asset_other').value,
+    obligations:obligations,
+    hist2025:(()=>{const a=[];for(let i=0;i<12;i++)a.push({g:document.getElementById(`hist_g_${i}`).value,b:document.getElementById(`hist_b_${i}`).value});return a;})()
   };
   [2026,2027,2028,2029,2030].forEach(yr=>{
     cfg[`vy_${yr}`]=document.getElementById(`vy_${yr}`)?.value||'0';
@@ -1370,7 +1725,10 @@ function loadConfig(){
     const cfg = JSON.parse(saved);
     
     ['gross','raise','ksieg','koszty','bday_m','bday_y','se_m','se_y','tax','zbieg','ryczalt_rate','wakacje','sim_start_form',
-     'kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne','diff_a','diff_b'].forEach(id=>{
+     'kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne','diff_a','diff_b',
+     'exp_czynsz','exp_media','exp_internet','exp_czesne','exp_stale_inne',
+     'exp_wyzywienie','exp_transport_os','exp_sub','exp_zm_inne',
+     'asset_savings','asset_invest','asset_real','asset_car','asset_other'].forEach(id=>{
       if(cfg[id] !== undefined && document.getElementById(id)) {
         document.getElementById(id).value = cfg[id];
       }
@@ -1381,7 +1739,7 @@ function loadConfig(){
         if(cfg[id]!==undefined&&document.getElementById(id))document.getElementById(id).value=cfg[id];
       });
     });
-    
+
     ['cb_uop','cb_zlec','cb_b2b','cb_dzielo','adv_ipbox'].forEach(id=>{
       if(cfg[id] !== undefined && document.getElementById(id)) {
         document.getElementById(id).checked = cfg[id];
@@ -1391,6 +1749,18 @@ function loadConfig(){
     if(cfg.simSwitches && Array.isArray(cfg.simSwitches)) {
       simSwitches = [...cfg.simSwitches];
       refreshSimUI();
+    }
+    if(cfg.obligations && Array.isArray(cfg.obligations)) {
+      obligations = [...cfg.obligations];
+      refreshObligUI();
+    }
+    if(cfg.hist2025 && Array.isArray(cfg.hist2025)) {
+      cfg.hist2025.forEach((h,i)=>{
+        const ge=document.getElementById(`hist_g_${i}`),be=document.getElementById(`hist_b_${i}`);
+        if(ge)ge.value=h.g||0;
+        if(be)be.value=h.b||0;
+      });
+      updateHistSummary();
     }
   } catch(e){
     console.error('Błąd ładowania konfiguracji', e);
