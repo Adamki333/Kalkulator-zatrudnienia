@@ -242,8 +242,9 @@ button,select,input,label,summary,.sim-del,.fin-sect-hd,
 
   /* Oblig-row — stack */
   .oblig-row{flex-direction:column;align-items:stretch;gap:5px}
-  .oblig-row .oblig-input{width:100%}
-  .oblig-row select{width:100%;min-height:0}
+  .oblig-row>.oblig-input{width:100%}
+  .oblig-row .oblig-mpick{width:100%}
+  .oblig-mpick select{flex:1;min-height:0}
 
   /* Selekty kolumny różnicy */
   .diff-sel{width:auto!important;flex:1;font-size:13px!important;padding:6px 8px!important;min-height:36px}
@@ -1223,7 +1224,7 @@ document.getElementById('ryczalt_rate').addEventListener('change',()=>{
   document.getElementById('tl-title').textContent=`Twoja ścieżka statusów — styczeń ${START_YEAR} → grudzień ${end}`;
   document.getElementById('hist-summary-title').textContent=`Historia zarobków ${HIST_YEAR}`;
   if(document.getElementById('oblig-hint'))
-    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale. „Od ${OBLIG_MIN_YEAR}" = aktywne od mies. 1. Najwcześniejsza dostępna data: styczeń ${OBLIG_MIN_YEAR}.`;
+    document.getElementById('oblig-hint').textContent=`Rata miesięczna obowiązująca w wybranym przedziale (miesiąc i rok). Najwcześniejsza dostępna data: styczeń ${OBLIG_MIN_YEAR}.`;
 })();
 
 function buildZmienneTable(){
@@ -1300,7 +1301,33 @@ document.getElementById('hist_use_avg').addEventListener('click',()=>{
   }
 });
 
-const OBLIG_LABELS=(()=>{const a=[];for(let i=0;i<60;i++){const{y,m}=idxToYM(i);a.push(`${m<10?'0':''}${m}.${y}`);}return a;})();
+const OBLIG_MAX_IDX=59;
+const OBLIG_MAX_YEAR=idxToYM(OBLIG_MAX_IDX).y;
+
+function obligIdxToYM(idx){const i=idx===-1?0:Math.max(0,Math.min(OBLIG_MAX_IDX,idx));return idxToYM(i);}
+function ymToObligIdx(y,m){return Math.max(0,Math.min(OBLIG_MAX_IDX,(y-START_YEAR)*12+(m-1)));}
+
+function buildObligMonthYearPick(initIdx,onChange){
+  const {y:iy,m:im}=obligIdxToYM(initIdx);
+  const wrap=Object.assign(document.createElement('span'),{className:'oblig-mpick',style:'display:inline-flex;gap:3px;align-items:center'});
+
+  const mSel=document.createElement('select');
+  mSel.className='oblig-input';
+  MONTHS.forEach((n,i)=>mSel.appendChild(new Option(n,i+1)));
+  mSel.value=im;
+
+  const ySel=document.createElement('select');
+  ySel.className='oblig-input';
+  for(let y=OBLIG_MIN_YEAR;y<=OBLIG_MAX_YEAR;y++)ySel.appendChild(new Option(y,y));
+  ySel.value=iy;
+
+  const update=()=>onChange(ymToObligIdx(+ySel.value,+mSel.value));
+  mSel.addEventListener('change',update);
+  ySel.addEventListener('change',update);
+
+  wrap.append(mSel,ySel);
+  return wrap;
+}
 
 function buildObligRow(ob,idx){
   const div=document.createElement('div');
@@ -1309,20 +1336,9 @@ function buildObligRow(ob,idx){
   const nameEl=Object.assign(document.createElement('input'),{type:'text',value:ob.name||'',placeholder:'Nazwa (np. kredyt)',className:'oblig-input',style:'flex:1;min-width:100px'});
   nameEl.addEventListener('input',()=>{ obligations[idx].name=nameEl.value; });
 
-  const startSel=document.createElement('select');
-  startSel.className='oblig-input';
-  startSel.appendChild(new Option(`Od ${OBLIG_MIN_YEAR}`,-1));
-  OBLIG_LABELS.forEach((l,i)=>{const{y}=idxToYM(i);if(y>=OBLIG_MIN_YEAR)startSel.appendChild(new Option(l,i));});
-  startSel.value=ob.startMonth;
-  startSel.addEventListener('change',()=>{ obligations[idx].startMonth=+startSel.value; render(); });
-
+  const startPick=buildObligMonthYearPick(ob.startMonth,v=>{obligations[idx].startMonth=v;render();});
   const arrow=Object.assign(document.createElement('span'),{textContent:'→',style:'font-size:11px;color:var(--text3)'});
-
-  const endSel=document.createElement('select');
-  endSel.className='oblig-input';
-  OBLIG_LABELS.forEach((l,i)=>{const{y}=idxToYM(i);if(y>=OBLIG_MIN_YEAR)endSel.appendChild(new Option(l,i));});
-  endSel.value=ob.endMonth;
-  endSel.addEventListener('change',()=>{ obligations[idx].endMonth=+endSel.value; render(); });
+  const endPick=buildObligMonthYearPick(ob.endMonth,v=>{obligations[idx].endMonth=v;render();});
 
   const amtEl=Object.assign(document.createElement('input'),{type:'number',value:ob.amount||0,min:0,max:50000,step:50,className:'oblig-input',style:'width:75px;text-align:right'});
   amtEl.addEventListener('input',()=>{ obligations[idx].amount=+amtEl.value||0; render(); });
@@ -1332,7 +1348,7 @@ function buildObligRow(ob,idx){
   del.className='sim-del'; del.textContent='×'; del.title='Usuń';
   del.onclick=()=>{ obligations.splice(idx,1); refreshObligUI(); render(); };
 
-  div.append(nameEl,startSel,arrow,endSel,amtEl,zlSpan,del);
+  div.append(nameEl,startPick,arrow,endPick,amtEl,zlSpan,del);
   return div;
 }
 
@@ -1345,7 +1361,7 @@ function refreshObligUI(){
 
 document.getElementById('oblig-add-btn').addEventListener('click',()=>{
   if(obligations.length>=8)return;
-  obligations.push({name:'',startMonth:-1,endMonth:59,amount:0});
+  obligations.push({name:'',startMonth:0,endMonth:59,amount:0});
   refreshObligUI();
   render();
 });
