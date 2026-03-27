@@ -284,9 +284,27 @@ td.col-best{color:var(--green);font-weight:700}
         <span class="val" id="ksiegv">250 zł</span>
       </div>
       <div class="row">
-        <label>Koszty operacyjne (netto/mies.)</label>
+        <label>Koszty operacyjne B2B <span style="font-size:10px;color:var(--text3)">(netto/mies.)</span>
+          <button type="button" id="btn_kd" onclick="toggleKosztyDetail()" style="font-size:10px;padding:1px 8px;border-radius:4px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);color:var(--text3);margin-left:6px;vertical-align:middle">Kategorie ▾</button>
+        </label>
         <input type="range" id="koszty" min="0" max="10000" step="100" value="0">
         <span class="val" id="kosztyv">0 zł</span>
+      </div>
+      <div id="koszty_detail" style="display:none;margin:0 0 8px 0;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:11px">
+        <div style="color:var(--text3);margin-bottom:8px;font-size:10px;line-height:1.5">Rozbicie miesięcznych kosztów operacyjnych JDG. Suma aktualizuje suwak powyżej.</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center">
+          <span style="color:var(--text2)">Sprzęt &amp; licencje</span>
+          <div><input type="number" id="kd_sprzet" min="0" max="10000" step="50" value="0" style="width:80px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit"> zł</div>
+          <span style="color:var(--text2)">Biuro &amp; lokal</span>
+          <div><input type="number" id="kd_biuro" min="0" max="10000" step="50" value="0" style="width:80px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit"> zł</div>
+          <span style="color:var(--text2)">Usługi zewnętrzne</span>
+          <div><input type="number" id="kd_uslugi" min="0" max="10000" step="50" value="0" style="width:80px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit"> zł</div>
+          <span style="color:var(--text2)">Transport &amp; tel.</span>
+          <div><input type="number" id="kd_transport" min="0" max="10000" step="50" value="0" style="width:80px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit"> zł</div>
+          <span style="color:var(--text2)">Inne</span>
+          <div><input type="number" id="kd_inne" min="0" max="10000" step="50" value="0" style="width:80px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit"> zł</div>
+        </div>
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);text-align:right;color:var(--text2)">Suma B2B: <strong id="kd_total" style="color:var(--text1)">0 zł</strong></div>
       </div>
       <div class="row" id="ryczalt_rate_row">
         <label>Stawka Ryczałtu (PKWiU)<br><span style="font-size:10px;color:var(--text3);font-weight:normal">Także dla algorytmu rekomendacji</span></label>
@@ -303,6 +321,63 @@ td.col-best{color:var(--green);font-weight:700}
           <option value="yes" selected>Tak — 1 mies./rok bez składek społ.</option>
           <option value="no">Nie</option>
         </select>
+      </div>
+    </div>
+  </details>
+</div>
+
+<!-- Zmienne zarobki -->
+<div class="panel">
+  <details id="zmienne_panel">
+    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;padding:.25rem 0">Zmienne zarobki &amp; premie — szczegółowe dane dochodowe</summary>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+        Podaj faktyczne lub planowane stawki miesięczne i jednorazowe premie roczne dla każdego roku.<br>
+        <span style="color:var(--text3)">Wpisz <strong>0</strong>, aby użyć stawki bazowej ze wzrostem liniowym z pola powyżej. Premia jest doliczana do grudnia danego roku.</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:5px 8px;color:var(--text3);font-weight:600">Rok</th>
+              <th style="padding:5px 8px;color:var(--text3);font-weight:600;text-align:center">Stawka mies. brutto<br><span style="font-size:10px;font-weight:400">(0 = auto z wzrostem)</span></th>
+              <th style="padding:5px 8px;color:var(--text3);font-weight:600;text-align:center">Premia roczna brutto<br><span style="font-size:10px;font-weight:400">(dodawana do grudnia)</span></th>
+              <th style="padding:5px 8px;color:var(--text3);font-weight:600;text-align:right">Auto-stawka</th>
+            </tr>
+          </thead>
+          <tbody id="zmienne_tbody">
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2026</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2026" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2026" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2026">—</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2027</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2027" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2027" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2027">—</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2028</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2028" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2028" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2028">—</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2029</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2029" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2029" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2029">—</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 8px;color:var(--text2);font-weight:600">2030</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vy_2030" min="0" max="200000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:center"><input type="number" id="vb_2030" min="0" max="1000000" step="100" value="0" style="width:90px;text-align:right;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:4px;padding:4px 7px;font-size:11px;font-family:inherit"> zł</td>
+              <td style="padding:6px 8px;text-align:right;color:var(--text3);font-size:11px" id="vy_auto_2030">—</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </details>
@@ -585,11 +660,10 @@ const FORM_WARNS={uop:'',zlec:'',b2b_lin:'Wymaga księgowości i JDG.',b2b_skala
 
 function calcAllForms(b,status,cumBaseUoP,cumBaseZlec,zbiegV,wakacjeV,ksieg,koszty,ryczaltRate,b2bM){
   const r={};
-  // Zrównujemy koszty netto dla wszystkich form!
-  // Dla UoP i Zlecenia nie ma odliczenia, więc od netto po prostu odejmujemy te zakupy.
-  r.uop=calcUoPWithCap(b,status,cumBaseUoP).netto-koszty;
-  r.zlec=calcZlecWithCap(b,status,cumBaseZlec).netto-koszty;
-  r.dzielo=calcDzielo(b)-koszty;
+  // Koszty operacyjne B2B są specyficzne dla działalności JDG — nie odejmujemy od UoP/Zlecenia/Dzieła
+  r.uop=calcUoPWithCap(b,status,cumBaseUoP).netto;
+  r.zlec=calcZlecWithCap(b,status,cumBaseZlec).netto;
+  r.dzielo=calcDzielo(b);
   if(b2bM>0){
     ['lin','skala','ryczalt','ipbox'].forEach(t=>{
       r['b2b_'+t]=calcB2B(b,b2bM,t,zbiegV,wakacjeV,ksieg+koszty,ryczaltRate).netto;
@@ -607,7 +681,7 @@ function calcOptimalPath(b0,raise,bdayStr,seStr,zbiegV,wakacjeV,ksieg,koszty,ryc
   const monthData=[];
   for(let i=0;i<months;i++){
     const{y,m}=idxToYM(i);
-    const b=b0*Math.pow(1+raise,Math.floor(i/12));
+    const b=getMonthlyGross(i,b0,raise);
     const status=getStatus(i,bdayStr,seStr);
     monthData.push({i,y,m,b,status});
   }
@@ -818,32 +892,34 @@ function calcCustomPath(b0,raise,bdayStr,seStr,zbiegV,wakacjeV,ksieg,koszty,rycz
   for(let i=0;i<months;i++){
     const{y,m}=idxToYM(i);
     if(m===1){cumUoP=0;cumZlec=0;}
-    const b=b0*Math.pow(1+raise,Math.floor(i/12));
+    const b=getMonthlyGross(i,b0,raise);
     const status=getStatus(i,bdayStr,seStr);
     const sw=[...sorted].reverse().find(s=>i>s.fromMonth);
-    // Przed pierwszym przełącznikiem używamy formy startowej wybranej przez użytkownika
     const curForm=sw?sw.form:(startForm||'zlec');
-    // Reset b2bM when switching away from b2b and back
     if(curForm!=='b2b') b2bM=0;
     let netto;
-    // i > fromMonth: wybrany miesiąc to OSTATNI miesiąc starej formy, nowa forma startuje od następnego
-    if(!sw||curForm==='uop'){netto=calcUoPWithCap(b,status,cumUoP).netto-koszty;}
-    else if(curForm==='zlec'){netto=calcZlecWithCap(b,status,cumZlec).netto-koszty;}
-    else if(curForm==='b2b'){
+    // cumUoP/cumZlec aktualizujemy tylko gdy jesteśmy na danej formie — cap ZUS nie zużywa się na innych formach
+    if(curForm==='uop'){
+      const uR=calcUoPWithCap(b,status,cumUoP);
+      netto=uR.netto; cumUoP+=uR.baseUsed;
+    } else if(curForm==='zlec'){
+      const zR=calcZlecWithCap(b,status,cumZlec);
+      netto=zR.netto; cumZlec+=zR.baseUsed;
+    } else if(curForm==='b2b'){
       b2bM++;
       let rawTax=sw.tax||'lin';
-      // Mapowanie r12/r85 → 'ryczalt' z odpowiednią stawką
       let t=rawTax, effectiveRate=ryczaltRate;
       if(rawTax==='r12'){t='ryczalt'; effectiveRate=12;}
       else if(rawTax==='r85'){t='ryczalt'; effectiveRate=8.5;}
       else if(rawTax==='r15'){t='ryczalt'; effectiveRate=15;}
       else if(rawTax==='r14'){t='ryczalt'; effectiveRate=14;}
       netto=calcB2B(b,b2bM,t,zbiegV,wakacjeV,ksieg+koszty,effectiveRate).netto;
+    } else if(curForm==='dzielo'){
+      netto=calcDzielo(b);
+    } else {
+      const uR=calcUoPWithCap(b,status,cumUoP);
+      netto=uR.netto; cumUoP+=uR.baseUsed;
     }
-    else if(curForm==='dzielo'){netto=calcDzielo(b)-koszty;}
-    else{netto=calcUoPWithCap(b,status,cumUoP).netto-koszty;}
-    const uR=calcUoPWithCap(b,status,cumUoP),zR=calcZlecWithCap(b,status,cumZlec);
-    cumUoP+=uR.baseUsed;cumZlec+=zR.baseUsed;
     arr.push(Math.round(netto));
   }
   return arr;
@@ -857,6 +933,39 @@ document.getElementById('sim-add-btn').addEventListener('click',()=>{
 });
 refreshSimUI();
 
+
+// ─── SZCZEGÓŁOWE KOSZTY B2B ──────────────────────────────────────────────────
+function toggleKosztyDetail(){
+  const d=document.getElementById('koszty_detail');
+  const btn=document.getElementById('btn_kd');
+  const visible=d.style.display!=='none';
+  d.style.display=visible?'none':'block';
+  btn.textContent=visible?'Kategorie ▾':'Kategorie ▲';
+}
+function updateKosztyFromDetail(){
+  const ids=['kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne'];
+  const total=ids.reduce((s,id)=>s+(+document.getElementById(id).value||0),0);
+  document.getElementById('kd_total').textContent=PLN(total);
+  const capped=Math.min(total,10000);
+  document.getElementById('koszty').value=capped;
+  document.getElementById('kosztyv').textContent=PLN(capped);
+  render();
+}
+['kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',updateKosztyFromDetail);
+});
+
+// ─── ZMIENNE ZAROBKI (PER-ROK) ───────────────────────────────────────────────
+let customYearsData=null; // null = użyj b0+raise; ustawiane w render()
+function getMonthlyGross(i,b0,raise){
+  const yi=Math.floor(i/12);
+  const mInYear=i%12; // 0..11
+  if(!customYearsData) return b0*Math.pow(1+raise,yi);
+  const cy=customYearsData[yi];
+  const base=cy.monthly>0 ? cy.monthly : b0*Math.pow(1+raise,yi);
+  // Premia w grudniu (mInYear===11)
+  return mInYear===11 ? base+cy.bonus : base;
+}
 
 document.getElementById('ksieg').addEventListener('input',e=>{document.getElementById('ksiegv').textContent=PLN(e.target.value);render();});
 document.getElementById('koszty').addEventListener('input',e=>{document.getElementById('kosztyv').textContent=PLN(e.target.value);render();});
@@ -903,6 +1012,22 @@ function render(){
   document.getElementById('ksiegv').textContent=ksieg+' zł';
   document.getElementById('kosztyv').textContent=koszty+' zł';
 
+  // Wczytaj zmienne zarobki roczne
+  const _YEARS=[2026,2027,2028,2029,2030];
+  let _hasCustom=false;
+  customYearsData=_YEARS.map((yr,yi)=>{
+    const monthly=+(document.getElementById(`vy_${yr}`)?.value||0);
+    const bonus=+(document.getElementById(`vb_${yr}`)?.value||0);
+    if(monthly>0||bonus>0)_hasCustom=true;
+    return{monthly,bonus};
+  });
+  if(!_hasCustom)customYearsData=null;
+  // Aktualizuj kolumnę "Auto-stawka" w tabeli zmiennych zarobków
+  _YEARS.forEach((yr,yi)=>{
+    const el=document.getElementById(`vy_auto_${yr}`);
+    if(el)el.textContent=PLN(b0*Math.pow(1+raise,yi))+'/mies.';
+  });
+
   const months=60;
   const labels=[],uopArr=[],zlecArr=[],b2bArr=[],dzieloArr=[],stageArr=[],statusArr=[],socArr=[],monthlyData=[];
 
@@ -911,7 +1036,7 @@ function render(){
     const{y,m}=idxToYM(i);
     if(m===1){cumBaseUoP=0;cumBaseZlec=0;}
     labels.push(`${m<10?'0':''}${m}.${String(y).slice(2)}`);
-    const b=b0*Math.pow(1+raise,Math.floor(i/12));
+    const b=getMonthlyGross(i,b0,raise);
     const status=getStatus(i,bdayStr,seStr);
     const r=calcB2B(b,i+1,tax,zbieg,wakacje,ksieg+koszty,ryczaltRate);
     statusArr.push(status);
@@ -919,10 +1044,10 @@ function render(){
     const zR=calcZlecWithCap(b,status,cumBaseZlec);
     cumBaseUoP+=uR.baseUsed;
     cumBaseZlec+=zR.baseUsed;
-    const uN=Math.round(uR.netto-koszty);
-    const zN=Math.round(zR.netto-koszty);
+    const uN=Math.round(uR.netto);
+    const zN=Math.round(zR.netto);
     const bN=Math.round(r.netto);
-    const dN=Math.round(calcDzielo(b)-koszty);
+    const dN=Math.round(calcDzielo(b));
     uopArr.push(uN);zlecArr.push(zN);b2bArr.push(bN);dzieloArr.push(dN);
     stageArr.push(r.stage);socArr.push(r.soc);
     monthlyData.push({month:labels[i],year:y,status,b2b_stage:r.stage,brutto:Math.round(b),uop_netto:uN,zlecenie_netto:zN,b2b_netto:bN,dzielo_netto:dN});
@@ -933,7 +1058,7 @@ function render(){
   const years=['2026','2027','2028','2029','2030'];
 
   const yearlyData=years.map((yr,yi)=>{
-    const b=b0*Math.pow(1+raise,yi);
+    const b=getMonthlyGross(yi*12,b0,raise); // stawka bazowa roku (styczeń, bez premii)
     const uopR=uopArr.slice(yi*12,(yi+1)*12).reduce((a,v)=>a+v,0);
     const zlecR=zlecArr.slice(yi*12,(yi+1)*12).reduce((a,v)=>a+v,0);
     const b2bR=b2bArr.slice(yi*12,(yi+1)*12).reduce((a,v)=>a+v,0);
@@ -941,7 +1066,8 @@ function render(){
     return{year:yr,brutto_miesiac:Math.round(b),status_start:STATUS_NAMES[statusArr[yi*12]],zus_etap:stageName(stageArr[yi*12]),uop_netto_rok:uopR,zlecenie_netto_rok:zlecR,b2b_netto_rok:b2bR,dzielo_netto_rok:dzieloR,b2b_vs_uop:b2bR-uopR,b2b_skumulowane:cumB2B[(yi+1)*12-1]};
   });
 
-  const params={data_urodzenia:bdayStr,student_do:seStr,stawka_bazowa:b0,forma_opodatkowania_b2b:tax,wzrost_roczny_proc:+document.getElementById('raise').value,zbieg_tytułow:zbieg==='yes',wakacje_skladkowe:wakacje,koszt_ksiegowosci:ksieg,koszty_uzyskania_przychodu:koszty,ryczalt_stawka:ryczaltRate,status_teraz:STATUS_NAMES[statusArr[0]]};
+  const _zarobkiRoczne=customYearsData?customYearsData.map((cy,yi)=>({rok:2026+yi,stawka_miesieczna:cy.monthly,premia_roczna:cy.bonus})):null;
+  const params={data_urodzenia:bdayStr,student_do:seStr,stawka_bazowa:b0,forma_opodatkowania_b2b:tax,wzrost_roczny_proc:+document.getElementById('raise').value,zbieg_tytułow:zbieg==='yes',wakacje_skladkowe:wakacje,koszt_ksiegowosci:ksieg,koszty_operacyjne_b2b:koszty,ryczalt_stawka:ryczaltRate,status_teraz:STATUS_NAMES[statusArr[0]],zarobki_roczne:_zarobkiRoczne};
   const totals={uop_5lat:uopArr.reduce((a,v)=>a+v,0),zlecenie_5lat:zlecArr.reduce((a,v)=>a+v,0),b2b_5lat:b2bArr.reduce((a,v)=>a+v,0),dzielo_5lat:dzieloArr.reduce((a,v)=>a+v,0)};
   totals.b2b_vs_uop_5lat=totals.b2b_5lat-totals.uop_5lat;
   lastExportData={parametry:params,podsumowanie_5lat:totals,dane_roczne:yearlyData,dane_miesieczne:monthlyData};
@@ -994,10 +1120,10 @@ function render(){
   // Cards
   const now_s=statusArr[0];
   const nowAll=[
-    {label:'Umowa o pracę',key:'uop',v:calcUoPWithCap(b0,now_s,0).netto-koszty},
-    {label:'Zlecenie',key:'zlec',v:calcZlecWithCap(b0,now_s,0).netto-koszty},
+    {label:'Umowa o pracę',key:'uop',v:calcUoPWithCap(b0,now_s,0).netto},
+    {label:'Zlecenie',key:'zlec',v:calcZlecWithCap(b0,now_s,0).netto},
     {label:'B2B (mies. 1)',key:'b2b',v:calcB2B(b0,1,tax,zbieg,wakacje,ksieg+koszty,ryczaltRate).netto},
-    {label:'Dzieło',key:'dzielo',v:calcDzielo(b0)-koszty}
+    {label:'Dzieło',key:'dzielo',v:calcDzielo(b0)}
   ].filter(x => formsEnabled[x.key]);
   const maxV=Math.max(...nowAll.map(x=>x.v));
   const uopV=nowAll[0].v;
@@ -1195,8 +1321,17 @@ function saveConfig(){
     cb_b2b: document.getElementById('cb_b2b').checked,
     cb_dzielo: document.getElementById('cb_dzielo').checked,
     adv_ipbox: document.getElementById('adv_ipbox').checked,
-    simSwitches: simSwitches
+    simSwitches: simSwitches,
+    kd_sprzet: document.getElementById('kd_sprzet').value,
+    kd_biuro: document.getElementById('kd_biuro').value,
+    kd_uslugi: document.getElementById('kd_uslugi').value,
+    kd_transport: document.getElementById('kd_transport').value,
+    kd_inne: document.getElementById('kd_inne').value
   };
+  [2026,2027,2028,2029,2030].forEach(yr=>{
+    cfg[`vy_${yr}`]=document.getElementById(`vy_${yr}`)?.value||'0';
+    cfg[`vb_${yr}`]=document.getElementById(`vb_${yr}`)?.value||'0';
+  });
   localStorage.setItem('kalk_cfg', JSON.stringify(cfg));
 }
 
@@ -1206,10 +1341,17 @@ function loadConfig(){
     if(!saved) return;
     const cfg = JSON.parse(saved);
     
-    ['gross','raise','ksieg','koszty','bday_m','bday_y','se_m','se_y','tax','zbieg','ryczalt_rate','wakacje','sim_start_form'].forEach(id=>{
+    ['gross','raise','ksieg','koszty','bday_m','bday_y','se_m','se_y','tax','zbieg','ryczalt_rate','wakacje','sim_start_form',
+     'kd_sprzet','kd_biuro','kd_uslugi','kd_transport','kd_inne'].forEach(id=>{
       if(cfg[id] !== undefined && document.getElementById(id)) {
         document.getElementById(id).value = cfg[id];
       }
+    });
+    [2026,2027,2028,2029,2030].forEach(yr=>{
+      ['vy_','vb_'].forEach(pfx=>{
+        const id=pfx+yr;
+        if(cfg[id]!==undefined&&document.getElementById(id))document.getElementById(id).value=cfg[id];
+      });
     });
     
     ['cb_uop','cb_zlec','cb_b2b','cb_dzielo','adv_ipbox'].forEach(id=>{
@@ -1242,6 +1384,13 @@ buildMonthPick('se_m','se_y','2026-09',2024,2035);
 document.getElementById('adv_ipbox').addEventListener('change',render);
 ['cb_uop','cb_zlec','cb_b2b','cb_dzielo'].forEach(id=>{
   document.getElementById(id).addEventListener('change',render);
+});
+// Zmienne zarobki — event listenery
+[2026,2027,2028,2029,2030].forEach(yr=>{
+  ['vy_','vb_'].forEach(pfx=>{
+    const el=document.getElementById(pfx+yr);
+    if(el)el.addEventListener('input',render);
+  });
 });
 
 loadConfig();
