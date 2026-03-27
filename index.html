@@ -1291,7 +1291,7 @@
       <div class="panel">
         <div class="panel-title">Parametry finansowe</div>
         <div class="row">
-          <label>Stawka brutto / faktura</label>
+          <label>Stawka bazowa brutto / faktura</label>
           <input
             type="range"
             id="gross"
@@ -1302,6 +1302,32 @@
           />
           <span class="val" id="gv">8 000 zł</span>
         </div>
+        <div class="row">
+          <label
+            >Stawka godzinowa zlecenia<br /><span
+              style="font-size: 10px; color: var(--text3); font-weight: normal"
+              >8 h × norma czasu pracy PL, z dniami wolnymi i świętami</span
+            ></label
+          >
+          <input
+            type="range"
+            id="zlec_hourly"
+            min="25"
+            max="250"
+            step="1"
+            value="50"
+          />
+          <span class="val" id="zlec_hourly_v">50 zł/h</span>
+        </div>
+        <div
+          id="zlec_hourly_hint"
+          style="
+            margin-top: -6px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: var(--text3);
+          "
+        ></div>
         <div class="row">
           <label>Forma opodatkowania B2B</label>
           <select id="tax">
@@ -1602,7 +1628,8 @@
               <span style="color: var(--text3)"
                 >Wpisz <strong>0</strong>, aby użyć stawki bazowej ze wzrostem
                 liniowym z pola powyżej. Premia jest doliczana do grudnia danego
-                roku.</span
+                roku. Zlecenie liczone jest osobno ze stawki godzinowej i normy
+                czasu pracy.</span
               >
             </div>
             <div style="overflow-x: auto">
@@ -1629,7 +1656,7 @@
                         text-align: center;
                       "
                     >
-                      Stawka mies. brutto<br /><span
+                      Stawka mies. bazowa<br /><span
                         style="font-size: 10px; font-weight: 400"
                         >(0 = auto z wzrostem)</span
                       >
@@ -2371,6 +2398,80 @@
       function idxToYM(i) {
         return { y: START_YEAR + Math.floor(i / 12), m: (i % 12) + 1 };
       }
+      function pad2(n) {
+        return String(n).padStart(2, "0");
+      }
+      function dateKeyFromParts(y, m, d) {
+        return `${y}-${pad2(m)}-${pad2(d)}`;
+      }
+      function addDaysUtc(date, days) {
+        const next = new Date(date.getTime());
+        next.setUTCDate(next.getUTCDate() + days);
+        return next;
+      }
+      function getEasterSundayUtc(year) {
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19 * a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const m = Math.floor((a + 11 * h + 22 * l) / 451);
+        const month = Math.floor((h + l - 7 * m + 114) / 31);
+        const day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(Date.UTC(year, month - 1, day));
+      }
+      const HOLIDAY_CACHE = new Map();
+      function getPolishHolidaySet(year) {
+        if (HOLIDAY_CACHE.has(year)) return HOLIDAY_CACHE.get(year);
+        const set = new Set(
+          [
+            [1, 1],
+            [1, 6],
+            [5, 1],
+            [5, 3],
+            [8, 15],
+            [11, 1],
+            [11, 11],
+            [12, 24],
+            [12, 25],
+            [12, 26],
+          ].map(([m, d]) => dateKeyFromParts(year, m, d)),
+        );
+        const easterSunday = getEasterSundayUtc(year);
+        const easterMonday = addDaysUtc(easterSunday, 1);
+        const corpusChristi = addDaysUtc(easterSunday, 60);
+        [easterMonday, corpusChristi].forEach((date) =>
+          set.add(
+            dateKeyFromParts(
+              date.getUTCFullYear(),
+              date.getUTCMonth() + 1,
+              date.getUTCDate(),
+            ),
+          ),
+        );
+        HOLIDAY_CACHE.set(year, set);
+        return set;
+      }
+      function getMonthlyWorkingHours(year, month) {
+        const holidaySet = getPolishHolidaySet(year);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let hours = 0;
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = new Date(year, month - 1, day);
+          const dow = date.getDay();
+          const key = dateKeyFromParts(year, month, day);
+          const isHoliday = holidaySet.has(key);
+          if (dow >= 1 && dow <= 5 && !isHoliday) hours += 8;
+          if (dow === 6 && isHoliday) hours -= 8;
+        }
+        return Math.max(0, hours);
+      }
       function stageName(s) {
         return {
           start: "Ulga na start",
@@ -2599,7 +2700,8 @@
       };
 
       function calcAllForms(
-        b,
+        baseGross,
+        zlecGross,
         status,
         cumBaseUoP,
         cumBaseZlec,
@@ -2612,13 +2714,13 @@
       ) {
         const r = {};
         // Koszty operacyjne B2B są specyficzne dla działalności JDG — nie odejmujemy od UoP/Zlecenia/Dzieła
-        r.uop = calcUoPWithCap(b, status, cumBaseUoP).netto;
-        r.zlec = calcZlecWithCap(b, status, cumBaseZlec).netto;
-        r.dzielo = calcDzielo(b);
+        r.uop = calcUoPWithCap(baseGross, status, cumBaseUoP).netto;
+        r.zlec = calcZlecWithCap(zlecGross, status, cumBaseZlec).netto;
+        r.dzielo = calcDzielo(baseGross);
         if (b2bM > 0) {
           ["lin", "skala", "ryczalt", "ipbox"].forEach((t) => {
             r["b2b_" + t] = calcB2B(
-              b,
+              baseGross,
               b2bM,
               t,
               zbiegV,
@@ -2633,6 +2735,7 @@
 
       function calcOptimalPath(
         b0,
+        zlecHourly,
         raise,
         bdayStr,
         seStr,
@@ -2648,106 +2751,103 @@
         const b2bKeys = ["b2b_lin", "b2b_skala", "b2b_ryczalt"].concat(
           incIpbox ? ["b2b_ipbox"] : [],
         );
+        const startFormCandidates = [];
+        if (formsEnabled.uop) startFormCandidates.push("uop");
+        if (formsEnabled.zlec) startFormCandidates.push("zlec");
+        if (formsEnabled.dzielo) startFormCandidates.push("dzielo");
+        if (startFormCandidates.length === 0) startFormCandidates.push("uop");
 
-        // Cache base values
         const monthData = [];
         for (let i = 0; i < months; i++) {
           const { y, m } = idxToYM(i);
-          const b = getMonthlyGross(i, b0, raise);
-          const status = getStatus(i, bdayStr, seStr);
-          monthData.push({ i, y, m, b, status });
+          monthData.push({
+            i,
+            y,
+            m,
+            baseGross: getMonthlyGross(i, b0, raise),
+            zlecGross: getMonthlyZlecGross(i, zlecHourly, raise),
+            status: getStatus(i, bdayStr, seStr),
+          });
         }
 
         let bestStrategyTotal = -1;
         let bestPath = [];
 
-        // Try all possible months to switch to B2B (60 = never drop UoP/Zlec)
         for (let startM = 0; startM <= months; startM++) {
-          if (!formsEnabled.b2b && startM < months) continue; // If B2B disabled, only evaluate startM=60 (never B2B)
-          let currentTotal = 0;
-          let currentPath = [];
-          let cumUoP = 0,
-            cumZlec = 0;
+          if (!formsEnabled.b2b && startM < months) continue;
+          const candidateForms =
+            startM === 0 ? [startFormCandidates[0]] : startFormCandidates;
+          const candidateB2bKeys = startM < months ? b2bKeys : [null];
 
-          for (let y_idx = 0; y_idx < 5; y_idx++) {
-            let yearMonths = monthData.slice(y_idx * 12, (y_idx + 1) * 12);
+          candidateForms.forEach((startForm) => {
+            candidateB2bKeys.forEach((fixedB2bKey) => {
+              let currentTotal = 0;
+              let currentPath = [];
+              let cumUoP = 0,
+                cumZlec = 0;
 
-            // Calculate forms for this year specifically
-            let yearOptions = yearMonths.map((d) => {
-              if (d.m === 1) {
+              for (let yIdx = 0; yIdx < 5; yIdx++) {
+                const yearMonths = monthData.slice(yIdx * 12, (yIdx + 1) * 12);
                 cumUoP = 0;
                 cumZlec = 0;
-              }
-              const b2bM = d.i >= startM ? d.i - startM + 1 : 0;
-              const all = calcAllForms(
-                d.b,
-                d.status,
-                cumUoP,
-                cumZlec,
-                zbiegV,
-                wakacjeV,
-                ksieg,
-                koszty,
-                ryczaltRate,
-                b2bM,
-              );
-              const uR = calcUoPWithCap(d.b, d.status, cumUoP),
-                zR = calcZlecWithCap(d.b, d.status, cumZlec);
-              cumUoP += uR.baseUsed;
-              cumZlec += zR.baseUsed;
-              return { d, all, b2bM };
-            });
 
-            // Find the best B2B form for this specific year
-            let bestB2bKeyForYear = "b2b_lin";
-            let maxB2bSum = -1;
-            b2bKeys.forEach((k) => {
-              let sum = 0;
-              yearOptions.forEach((opt) => {
-                if (opt.b2bM > 0) sum += opt.all[k];
-              });
-              if (sum > maxB2bSum) {
-                maxB2bSum = sum;
-                bestB2bKeyForYear = k;
+                yearMonths.forEach((d) => {
+                  const b2bM =
+                    fixedB2bKey && d.i >= startM ? d.i - startM + 1 : 0;
+                  const all = calcAllForms(
+                    d.baseGross,
+                    d.zlecGross,
+                    d.status,
+                    cumUoP,
+                    cumZlec,
+                    zbiegV,
+                    wakacjeV,
+                    ksieg,
+                    koszty,
+                    ryczaltRate,
+                    b2bM,
+                  );
+                  let form, netto;
+                  if (b2bM === 0) {
+                    form = startForm;
+                    netto = all[form] ?? 0;
+                    if (form === "uop") {
+                      const uR = calcUoPWithCap(d.baseGross, d.status, cumUoP);
+                      cumUoP += uR.baseUsed;
+                    } else if (form === "zlec") {
+                      const zR = calcZlecWithCap(
+                        d.zlecGross,
+                        d.status,
+                        cumZlec,
+                      );
+                      cumZlec += zR.baseUsed;
+                    }
+                  } else {
+                    form = fixedB2bKey;
+                    netto = all[form];
+                  }
+                  currentTotal += netto;
+                  currentPath.push({
+                    i: d.i,
+                    y: d.y,
+                    m: d.m,
+                    status: d.status,
+                    stage: b2bM > 0 ? getZUSstage(b2bM) : "—",
+                    b: d.baseGross,
+                    zlecGross: d.zlecGross,
+                    form,
+                    netto,
+                    all,
+                  });
+                });
+              }
+
+              if (currentTotal > bestStrategyTotal) {
+                bestStrategyTotal = currentTotal;
+                bestPath = currentPath;
               }
             });
-
-            yearOptions.forEach((opt) => {
-              const { d, all, b2bM } = opt;
-              let form, netto;
-              if (b2bM === 0) {
-                let opts = [];
-                if (formsEnabled.uop) opts.push({ f: "uop", n: all.uop });
-                if (formsEnabled.zlec) opts.push({ f: "zlec", n: all.zlec });
-                if (formsEnabled.dzielo)
-                  opts.push({ f: "dzielo", n: all.dzielo });
-                if (opts.length === 0) opts.push({ f: "uop", n: 0 }); // Fallback
-                opts.sort((a, b) => b.n - a.n);
-                form = opts[0].f;
-                netto = opts[0].n;
-              } else {
-                form = bestB2bKeyForYear;
-                netto = all[form];
-              }
-              currentTotal += netto;
-              currentPath.push({
-                i: d.i,
-                y: d.y,
-                m: d.m,
-                status: d.status,
-                stage: b2bM > 0 ? getZUSstage(b2bM) : "—",
-                b: d.b,
-                form,
-                netto,
-                all,
-              });
-            });
-          }
-
-          if (currentTotal > bestStrategyTotal) {
-            bestStrategyTotal = currentTotal;
-            bestPath = currentPath;
-          }
+          });
         }
         return bestPath;
       }
@@ -2973,6 +3073,7 @@
 
       function calcCustomPath(
         b0,
+        zlecHourly,
         raise,
         bdayStr,
         seStr,
@@ -2998,6 +3099,7 @@
             cumZlec = 0;
           }
           const b = getMonthlyGross(i, b0, raise);
+          const zlecB = getMonthlyZlecGross(i, zlecHourly, raise);
           const status = getStatus(i, bdayStr, seStr);
           const sw = [...sorted].reverse().find((s) => i > s.fromMonth);
           const curForm = sw ? sw.form : startForm || "zlec";
@@ -3009,7 +3111,7 @@
             netto = uR.netto;
             cumUoP += uR.baseUsed;
           } else if (curForm === "zlec") {
-            const zR = calcZlecWithCap(b, status, cumZlec);
+            const zR = calcZlecWithCap(zlecB, status, cumZlec);
             netto = zR.netto;
             cumZlec += zR.baseUsed;
           } else if (curForm === "b2b") {
@@ -3110,6 +3212,18 @@
         const base = cy.monthly > 0 ? cy.monthly : b0 * Math.pow(1 + raise, yi);
         // Premia w grudniu (mInYear===11)
         return mInYear === 11 ? base + cy.bonus : base;
+      }
+      function getMonthlyZlecGross(i, zlecHourly, raise) {
+        const yi = Math.floor(i / 12);
+        const mInYear = i % 12;
+        const { y, m } = idxToYM(i);
+        const hourly = zlecHourly * Math.pow(1 + raise, yi);
+        const hours = getMonthlyWorkingHours(y, m);
+        const bonus =
+          customYearsData && customYearsData[yi]
+            ? customYearsData[yi].bonus || 0
+            : 0;
+        return hourly * hours + (mInYear === 11 ? bonus : 0);
       }
 
       document.getElementById("ksieg").addEventListener("input", (e) => {
@@ -3486,6 +3600,7 @@
         };
 
         const b0 = +document.getElementById("gross").value;
+        const zlecHourly = +document.getElementById("zlec_hourly").value;
         const bdayStr = getMonthVal("bday_m", "bday_y");
         const seStr = getMonthVal("se_m", "se_y");
         const tax = document.getElementById("tax").value;
@@ -3498,10 +3613,18 @@
 
         document.getElementById("gv").textContent =
           Math.round(b0).toLocaleString("pl-PL") + " zł";
+        document.getElementById("zlec_hourly_v").textContent =
+          zlecHourly.toLocaleString("pl-PL", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          }) + " zł/h";
         document.getElementById("rv").textContent =
           document.getElementById("raise").value + "%";
         document.getElementById("ksiegv").textContent = ksieg + " zł";
         document.getElementById("kosztyv").textContent = koszty + " zł";
+        const zlecHoursNow = getMonthlyWorkingHours(START_YEAR, 1);
+        document.getElementById("zlec_hourly_hint").textContent =
+          `Styczeń ${START_YEAR}: ${zlecHoursNow} h (${(zlecHoursNow / 8).toLocaleString("pl-PL")} dni roboczych równoważnych).`;
 
         // Wczytaj zmienne zarobki roczne
         const _YEARS = Array.from({ length: 5 }, (_, i) => START_YEAR + i);
@@ -3540,6 +3663,7 @@
           }
           labels.push(`${m < 10 ? "0" : ""}${m}.${String(y).slice(2)}`);
           const b = getMonthlyGross(i, b0, raise);
+          const zlecB = getMonthlyZlecGross(i, zlecHourly, raise);
           const status = getStatus(i, bdayStr, seStr);
           const r = calcB2B(
             b,
@@ -3552,7 +3676,7 @@
           );
           statusArr.push(status);
           const uR = calcUoPWithCap(b, status, cumBaseUoP);
-          const zR = calcZlecWithCap(b, status, cumBaseZlec);
+          const zR = calcZlecWithCap(zlecB, status, cumBaseZlec);
           cumBaseUoP += uR.baseUsed;
           cumBaseZlec += zR.baseUsed;
           const uN = Math.round(uR.netto);
@@ -3571,6 +3695,8 @@
             status,
             b2b_stage: r.stage,
             brutto: Math.round(b),
+            zlecenie_brutto: Math.round(zlecB),
+            zlecenie_godziny: getMonthlyWorkingHours(y, m),
             uop_netto: uN,
             zlecenie_netto: zN,
             b2b_netto: bN,
@@ -3595,6 +3721,7 @@
 
         const yearlyData = years.map((yr, yi) => {
           const b = getMonthlyGross(yi * 12, b0, raise); // stawka bazowa roku (styczeń, bez premii)
+          const zlecB = getMonthlyZlecGross(yi * 12, zlecHourly, raise);
           const uopR = uopArr
             .slice(yi * 12, (yi + 1) * 12)
             .reduce((a, v) => a + v, 0);
@@ -3610,6 +3737,11 @@
           return {
             year: yr,
             brutto_miesiac: Math.round(b),
+            zlecenie_brutto_miesiac: Math.round(zlecB),
+            zlecenie_godziny_miesiac: getMonthlyWorkingHours(
+              START_YEAR + yi,
+              1,
+            ),
             status_start: STATUS_NAMES[statusArr[yi * 12]],
             zus_etap: stageName(stageArr[yi * 12]),
             uop_netto_rok: uopR,
@@ -3632,6 +3764,7 @@
           data_urodzenia: bdayStr,
           student_do: seStr,
           stawka_bazowa: b0,
+          stawka_zlecenia_godzinowa: zlecHourly,
           forma_opodatkowania_b2b: tax,
           wzrost_roczny_proc: +document.getElementById("raise").value,
           zbieg_tytułow: zbieg === "yes",
@@ -3726,6 +3859,7 @@
         // Auto-run optimal algorithm directly with koszty included
         const optPath = calcOptimalPath(
           b0,
+          zlecHourly,
           raise,
           bdayStr,
           seStr,
@@ -3794,7 +3928,11 @@
           {
             label: "Zlecenie",
             key: "zlec",
-            v: calcZlecWithCap(b0, now_s, 0).netto,
+            v: calcZlecWithCap(
+              getMonthlyZlecGross(0, zlecHourly, raise),
+              now_s,
+              0,
+            ).netto,
           },
           {
             label: "B2B (mies. 1)",
@@ -3863,6 +4001,7 @@
         const simStartForm = document.getElementById("sim_start_form").value;
         customNettoArr = calcCustomPath(
           b0,
+          zlecHourly,
           raise,
           bdayStr,
           seStr,
@@ -4171,7 +4310,7 @@
         const diffColHeader = `<span style="color:${DIFF_COLORS[diffA]}">${DIFF_LABELS[diffA]}</span> vs <span style="color:${DIFF_COLORS[diffB]}">${DIFF_LABELS[diffB]}</span>`;
 
         let tbl =
-          `<tr><th>Rok</th><th>Brutto</th><th>Status</th><th>ZUS</th>` +
+          `<tr><th>Rok</th><th>Baza</th><th>Status</th><th>ZUS</th>` +
           (formsEnabled.uop ? `<th style="color:${COLORS.uop}">UoP</th>` : "") +
           (formsEnabled.zlec
             ? `<th style="color:${COLORS.zlec}">Zlecenie</th>`
@@ -4252,7 +4391,7 @@
           ipbox: "IP Box 5%: kwalifikowane prawa IP, wymaga ewidencji B+R.",
         };
         document.getElementById("foot").innerHTML =
-          `${tn[tax]} Wzrost stawki ${document.getElementById("raise").value}%/rok. Uwzględniono: limit 30-krotności (282 600 zł/rok), wakacje składkowe${wakacje ? " (wł.)" : " (wył.)"}, koszt księgowości B2B (${ksieg} zł/mies.). Nie uwzględniono: wartości urlopu (~10%), L4, PPK — łącznie ~15–20% wartości wynagrodzenia. Kwoty w cenach bieżących. Dzieło: brak ZUS, brak PIT-0, KUP 20%, ryzyko przekwalifikowania przez ZUS.<br><br>Uwaga: UoP i zlecenie porównywane przy identycznym koszcie pracodawcy/zleceniodawcy (ta sama kwota brutto). W praktyce zlecenie często bywa podane jako kwota netto lub brutto dla zleceniodawcy — wówczas porównanie zmienia się na korzyść zlecenia.`;
+          `${tn[tax]} Wzrost stawki ${document.getElementById("raise").value}%/rok. Uwzględniono: limit 30-krotności (282 600 zł/rok), wakacje składkowe${wakacje ? " (wł.)" : " (wył.)"}, koszt księgowości B2B (${ksieg} zł/mies.). Nie uwzględniono: wartości urlopu (~10%), L4, PPK — łącznie ~15–20% wartości wynagrodzenia. Kwoty w cenach bieżących. Dzieło: brak ZUS, brak PIT-0, KUP 20%, ryzyko przekwalifikowania przez ZUS.<br><br>Uwaga: zlecenie liczone jest osobno ze stawki ${zlecHourly.toLocaleString("pl-PL", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} zł/h i miesięcznej normy czasu pracy w polskim kalendarzu (dni robocze + święta ustawowe).`;
 
         // ── Finanse osobiste: dochód do dyspozycji ────────────────────────────────
         updateExpenseSums();
@@ -4269,7 +4408,11 @@
             label: "Zlecenie",
             key: "zlec",
             col: COLORS.zlec,
-            net: calcZlecWithCap(b0, statusArr[0], 0).netto,
+            net: calcZlecWithCap(
+              getMonthlyZlecGross(0, zlecHourly, raise),
+              statusArr[0],
+              0,
+            ).netto,
           },
           {
             label: "B2B (mies.1)",
@@ -4401,7 +4544,7 @@
           s = d.parametry,
           t = d.podsumowanie_5lat,
           yr = d.dane_roczne;
-        const msg = `Przesyłam wyniki kalkulatora zatrudnienia ${START_YEAR}–${START_YEAR + 4} do analizy:\n\nPARAMETRY:\n- Data urodzenia: ${s.data_urodzenia}\n- Status studenta do: ${s.student_do}\n- Stawka bazowa: ${s.stawka_bazowa} zł/mies., wzrost ${s.wzrost_roczny_proc}%/rok\n- Forma opodatkowania B2B: ${s.forma_opodatkowania_b2b}\n- Zbieg tytułów: ${s.zbieg_tytułow ? "tak" : "nie"}\n- Wakacje składkowe: ${s.wakacje_skladkowe ? "tak" : "nie"}\n- Koszt księgowości B2B: ${s.koszt_ksiegowosci} zł/mies.\n- Składki MZP+: ${s.mzp_skladki} zł/mies.\n- Status teraz: ${s.status_teraz}\n\nPODSUMOWANIE 5 LAT:\n- UoP łącznie: ${t.uop_5lat.toLocaleString("pl-PL")} zł\n- Zlecenie łącznie: ${t.zlecenie_5lat.toLocaleString("pl-PL")} zł\n- B2B łącznie: ${t.b2b_5lat.toLocaleString("pl-PL")} zł\n- Dzieło łącznie: ${t.dzielo_5lat.toLocaleString("pl-PL")} zł\n- B2B vs UoP: ${t.b2b_vs_uop_5lat >= 0 ? "+" : ""}${t.b2b_vs_uop_5lat.toLocaleString("pl-PL")} zł\n\nDANE ROCZNE:\n${yr.map((r) => `${r.year}: ${r.brutto_miesiac.toLocaleString("pl-PL")} zł brutto | UoP ${r.uop_netto_rok.toLocaleString("pl-PL")} zł | Zlecenie ${r.zlecenie_netto_rok.toLocaleString("pl-PL")} zł | B2B ${r.b2b_netto_rok.toLocaleString("pl-PL")} zł | Dzieło ${r.dzielo_netto_rok.toLocaleString("pl-PL")} zł (${r.b2b_vs_uop >= 0 ? "+" : ""}${r.b2b_vs_uop.toLocaleString("pl-PL")} B2B vs UoP) | ${r.status_start} | ${r.zus_etap}`).join("\n")}\n\nProsze o analizę tych wyników.`;
+        const msg = `Przesyłam wyniki kalkulatora zatrudnienia ${START_YEAR}–${START_YEAR + 4} do analizy:\n\nPARAMETRY:\n- Data urodzenia: ${s.data_urodzenia}\n- Status studenta do: ${s.student_do}\n- Stawka bazowa: ${s.stawka_bazowa} zł/mies., wzrost ${s.wzrost_roczny_proc}%/rok\n- Stawka godzinowa zlecenia: ${s.stawka_zlecenia_godzinowa} zł/h (wg normy czasu pracy PL)\n- Forma opodatkowania B2B: ${s.forma_opodatkowania_b2b}\n- Zbieg tytułów: ${s.zbieg_tytułow ? "tak" : "nie"}\n- Wakacje składkowe: ${s.wakacje_skladkowe ? "tak" : "nie"}\n- Koszt księgowości B2B: ${s.koszt_ksiegowosci} zł/mies.\n- Składki MZP+: ${s.mzp_skladki} zł/mies.\n- Status teraz: ${s.status_teraz}\n\nPODSUMOWANIE 5 LAT:\n- UoP łącznie: ${t.uop_5lat.toLocaleString("pl-PL")} zł\n- Zlecenie łącznie: ${t.zlecenie_5lat.toLocaleString("pl-PL")} zł\n- B2B łącznie: ${t.b2b_5lat.toLocaleString("pl-PL")} zł\n- Dzieło łącznie: ${t.dzielo_5lat.toLocaleString("pl-PL")} zł\n- B2B vs UoP: ${t.b2b_vs_uop_5lat >= 0 ? "+" : ""}${t.b2b_vs_uop_5lat.toLocaleString("pl-PL")} zł\n\nDANE ROCZNE:\n${yr.map((r) => `${r.year}: baza ${r.brutto_miesiac.toLocaleString("pl-PL")} zł/mies. | zlecenie ${r.zlecenie_brutto_miesiac.toLocaleString("pl-PL")} zł/mies. (${r.zlecenie_godziny_miesiac} h) | UoP ${r.uop_netto_rok.toLocaleString("pl-PL")} zł | Zlecenie ${r.zlecenie_netto_rok.toLocaleString("pl-PL")} zł | B2B ${r.b2b_netto_rok.toLocaleString("pl-PL")} zł | Dzieło ${r.dzielo_netto_rok.toLocaleString("pl-PL")} zł | ${r.status_start} | ${r.zus_etap}`).join("\n")}\n\nProsze o analizę tych wyników.`;
         sendPrompt(msg);
       });
 
@@ -4452,6 +4595,7 @@
       function saveConfig() {
         const cfg = {
           gross: document.getElementById("gross").value,
+          zlec_hourly: document.getElementById("zlec_hourly").value,
           raise: document.getElementById("raise").value,
           ksieg: document.getElementById("ksieg").value,
           koszty: document.getElementById("koszty").value,
@@ -4517,6 +4661,7 @@
 
           [
             "gross",
+            "zlec_hourly",
             "raise",
             "ksieg",
             "koszty",
@@ -4626,7 +4771,15 @@
         START_YEAR + 10,
       );
 
-      ["gross", "raise", "tax", "zbieg", "ksieg", "wakacje"].forEach((id) => {
+      [
+        "gross",
+        "zlec_hourly",
+        "raise",
+        "tax",
+        "zbieg",
+        "ksieg",
+        "wakacje",
+      ].forEach((id) => {
         const el = document.getElementById(id);
         el.addEventListener("input", render);
         el.addEventListener("change", render);
